@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Oregon Trail - Mr. Narbe's Classroom Edition</title>
+    <title>Oregon Trail - AI-Powered HD Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,108 +13,101 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .game-container {
-            width: 100%;
-            max-width: 1000px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
             overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 40px;
-            text-align: center;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
 
-        .header h1 {
-            font-size: 3.5em;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .header .wagon-emoji {
-            font-size: 4em;
-            margin-bottom: 10px;
-        }
-
-        .header .subtitle {
-            font-size: 1.8em;
-            color: #FFD700;
-            margin-bottom: 10px;
-        }
-
-        .content {
-            padding: 40px;
-            min-height: 500px;
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
         .screen {
             display: none;
-            animation: fadeIn 0.5s ease-in;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: auto;
+            z-index: 100;
         }
 
         .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            display: flex;
         }
 
         .title-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
             text-align: center;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .title-screen h1 {
+            font-size: 4em;
+            font-weight: bold;
+            text-shadow: 3px 3px 20px rgba(0,0,0,0.8);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .title-art {
+            font-size: 8em;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
         }
 
         .intro-text {
-            font-size: 1.2em;
+            font-size: 1.3em;
+            max-width: 700px;
             line-height: 1.8;
-            color: #333;
-            margin: 30px 0;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
         }
 
-        .name-input {
-            margin: 30px 0;
-        }
-
-        .name-input label {
-            font-size: 1.1em;
+        .narbe-edition {
+            font-size: 1.8em;
+            color: #FFD700;
+            margin: 20px 0;
             font-weight: bold;
-            color: #333;
-            display: block;
-            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255,215,0,0.6);
+            animation: glow 2s ease-in-out infinite;
         }
 
-        .name-input input {
-            width: 100%;
-            max-width: 400px;
-            padding: 12px;
-            font-size: 1em;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            box-sizing: border-box;
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+            50% { text-shadow: 0 0 40px rgba(255,215,0,1); }
         }
 
-        .name-input input:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-            border-color: #764ba2;
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         button {
@@ -126,529 +120,706 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
-        button:active {
-            transform: translateY(-1px);
+        button.primary {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
         }
 
-        .stats-grid {
+        .party-setup-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 40px;
+            gap: 30px;
+        }
+
+        .party-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .member-input {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .member-input label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .member-input input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 1em;
+        }
+
+        .game-screen {
+            justify-content: flex-start;
+            flex-direction: column;
             gap: 15px;
-            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            width: 100%;
+            pointer-events: auto;
         }
 
         .stat-box {
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px solid #667eea;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #4ECDC4;
             border-radius: 10px;
-            padding: 20px;
+            padding: 12px;
             text-align: center;
+            backdrop-filter: blur(10px);
+            font-size: 0.9em;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
         }
 
         .stat-label {
-            font-size: 0.9em;
-            color: #764ba2;
-            font-weight: bold;
+            font-size: 0.8em;
+            color: #4ECDC4;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            margin-bottom: 10px;
         }
 
         .stat-value {
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: bold;
-            color: #667eea;
+            color: #fff;
         }
 
-        .location-display {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
+        .question-panel {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255,215,0,0.4);
+        }
+
+        .question-title {
+            font-size: 1.8em;
             margin-bottom: 20px;
-            font-size: 1.3em;
+            color: #FFD700;
             font-weight: bold;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
         }
 
-        .progress-bar {
-            background: #e0e0e0;
-            border-radius: 10px;
-            height: 30px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            position: relative;
+        .question-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #ddd;
         }
 
-        .progress-fill {
-            background: linear-gradient(90deg, #4ECDC4, #44A08D);
-            height: 100%;
-            transition: width 0.5s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 0.9em;
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .event-box {
-            background: rgba(255, 107, 107, 0.1);
-            border-left: 4px solid #FF6B6B;
-            padding: 25px;
-            margin: 20px 0;
-            border-radius: 8px;
-            min-height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .event-panel {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255,107,107,0.4);
         }
 
         .event-title {
             font-size: 1.8em;
-            font-weight: bold;
-            color: #FF6B6B;
             margin-bottom: 15px;
+            color: #FF8E53;
+            font-weight: bold;
         }
 
         .event-text {
             font-size: 1.1em;
-            color: #333;
-            line-height: 1.8;
-        }
-
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .choice-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: 2px solid #667eea;
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-align: left;
-        }
-
-        .choice-btn:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            border-color: #FF8E53;
-            transform: translateX(10px);
-            box-shadow: 0 0 20px rgba(255, 139, 83, 0.5);
-        }
-
-        .end-screen {
-            text-align: center;
-        }
-
-        .end-title {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
+            line-height: 1.6;
             margin-bottom: 20px;
+            color: #ddd;
         }
 
-        .end-emoji {
-            font-size: 5em;
-            margin-bottom: 20px;
-        }
-
-        .end-stats {
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px solid #667eea;
+        .location-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #4ECDC4;
             border-radius: 10px;
-            padding: 25px;
-            margin: 20px 0;
-            text-align: left;
-            font-size: 1.1em;
-            line-height: 2;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .death-message {
-            color: #FF6B6B;
+            padding: 15px 30px;
             font-size: 1.3em;
             font-weight: bold;
-            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            transition: width 0.5s;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .fps-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #4ECDC4;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-family: monospace;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <div class="wagon-emoji">🚐</div>
-            <h1>THE OREGON TRAIL</h1>
-            <div class="subtitle">👨‍🏫 Mr. Narbe's Classroom Edition 👨‍🏫</div>
-        </div>
-
-        <div class="content">
-            <!-- TITLE SCREEN -->
-            <div class="screen active" id="titleScreen">
-                <div class="title-screen">
-                    <div class="intro-text">
-                        <p><strong>You are a 19th century pioneer bound for the Oregon Territory, 2000 miles away.</strong></p>
-                        <p>You have a team of oxen and limited supplies. The well-being of your party depends on your decisions and luck.</p>
-                        <p><strong>Do you have what it takes to survive the Oregon Trail?</strong></p>
-                    </div>
-
-                    <div class="name-input">
-                        <label>What is your name?</label>
-                        <input type="text" id="playerName" placeholder="Enter your name" value="Narbe's Student">
-                    </div>
-
-                    <button onclick="game.startGame()">BEGIN JOURNEY</button>
+    <div id="gameContainer">
+        <div class="ui-overlay">
+            <div id="titleScreen" class="screen active title-screen">
+                <div class="title-art">🚐</div>
+                <h1>THE OREGON TRAIL</h1>
+                <p class="narbe-edition">🎓 Mr. Narbe's Class Edition 🎓</p>
+                <p class="intro-text">
+                    It's 1847. Join thousands of settlers heading west!<br>
+                    Travel 2,000 miles across procedurally generated terrain.<br>
+                    Experience dynamic weather, realistic graphics, and intense challenges!<br>
+                    <strong>Answer history questions to guide your party to safety!</strong>
+                </p>
+                <div class="button-group">
+                    <button class="primary" onclick="game.goToScreen('partySetup')">BEGIN JOURNEY</button>
                 </div>
             </div>
 
-            <!-- GAME SCREEN -->
-            <div class="screen" id="gameScreen">
-                <div class="location-display" id="locationName">Independence, Missouri</div>
-
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%;">
-                        <span id="progressText">0</span>/2000 Miles
+            <div id="partySetup" class="screen party-setup-screen">
+                <h2 style="font-size: 2.5em;">Name Your Party</h2>
+                <div class="party-grid">
+                    <div class="member-input">
+                        <label>👤 LEADER</label>
+                        <input type="text" id="leader" placeholder="Your name">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 1</label>
+                        <input type="text" id="member2" placeholder="Name">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 2</label>
+                        <input type="text" id="member3" placeholder="Name">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 3</label>
+                        <input type="text" id="member4" placeholder="Name">
                     </div>
                 </div>
-
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-label">📦 Food</div>
-                        <div class="stat-value"><span id="food">2000</span> lbs</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">💰 Money</div>
-                        <div class="stat-value">$<span id="money">1600</span></div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">🐴 Oxen</div>
-                        <div class="stat-value"><span id="oxen">4</span></div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">❤️ Health</div>
-                        <div class="stat-value"><span id="health">100</span>%</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">📅 Date</div>
-                        <div class="stat-value" style="font-size: 1.2em;"><span id="date">March 1847</span></div>
-                    </div>
+                <div class="button-group">
+                    <button onclick="game.goToScreen('titleScreen')">← BACK</button>
+                    <button class="primary" onclick="game.startJourney()">DEPART →</button>
                 </div>
-
-                <div class="event-box">
-                    <div class="event-title" id="eventTitle"></div>
-                    <div class="event-text" id="eventText"></div>
-                </div>
-
-                <div class="choices" id="choices"></div>
             </div>
 
-            <!-- END SCREEN -->
-            <div class="screen" id="endScreen">
-                <div class="end-screen">
-                    <div class="end-emoji" id="endEmoji"></div>
-                    <div class="end-title" id="endTitle"></div>
-                    <div id="deathMessage" class="death-message"></div>
-                    <div class="end-stats" id="endStats"></div>
-                    <button onclick="location.reload()">PLAY AGAIN</button>
-                </div>
+            <div id="gameScreen" class="screen game-screen">
+                <div class="fps-counter" id="fpsCounter">FPS: 60</div>
+                <div class="location-display" id="locationDisplay">Loading...</div>
+                <div class="stats-panel" id="statsPanel"></div>
+                <div id="questionPanel" class="question-panel" style="display:none;"></div>
+                <div id="eventPanel" class="event-panel" style="display:none;"></div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+
+            <div id="endScreen" class="screen" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); justify-content: center; align-items: center; flex-direction: column; gap: 30px; padding: 40px; text-align: center;">
+                <div id="endContent"></div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const game = {
-            playerName: '',
-            distance: 0,
-            food: 2000,
-            money: 1600,
-            oxen: 4,
-            health: 100,
-            date: { month: 3, year: 1847 },
-            daysSpent: 0,
-            totalDistance: 2000,
-            currentLocation: 0,
-            gameActive: false,
-            inEvent: false,
+        class AdvancedOregonTrail {
+            constructor() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+                document.getElementById('gameContainer').insertBefore(this.renderer.domElement, document.getElementById('gameContainer').firstChild);
 
-            locations: [
-                { name: '🚐 Independence, Missouri', distance: 0 },
-                { name: '🏰 Fort Kearny, Nebraska', distance: 300 },
-                { name: '🗻 Chimney Rock, Nebraska', distance: 420 },
-                { name: '🏰 Fort Laramie, Wyoming', distance: 645 },
-                { name: '🏰 Fort Hall, Idaho', distance: 1197 },
-                { name: '🌪️ The Dalles, Oregon', distance: 1665 },
-                { name: '🌲 Willamette Valley, Oregon', distance: 2000 }
-            ],
+                this.camera.position.set(0, 15, 40);
+                this.camera.lookAt(0, 5, 0);
 
-            events: [
-                {
-                    name: 'illness',
-                    chance: 0.15,
-                    title: '🤒 Someone Has Dysentery!',
-                    text: `A party member has dysentery - a serious intestinal disease.\nWhat do you do?`,
-                    choices: [
-                        { text: '✓ Rest for 3 days (-3 days, -$10 medicine, +20 health)', action: () => {
-                            game.daysSpent += 3;
-                            game.money -= 10;
-                            game.health = Math.min(100, game.health + 20);
-                            game.continueTrail();
-                        }},
-                        { text: '✗ Keep moving (risky!)', action: () => {
-                            if (Math.random() < 0.4) {
-                                game.showEvent('💀 DEATH!', `A party member died of dysentery.\n\nOh no!`, [
-                                    { text: 'CONTINUE', action: () => {
-                                        game.health -= 40;
-                                        game.continueTrail();
-                                    }}
-                                ]);
-                            } else {
-                                game.health -= 15;
-                                game.continueTrail();
-                            }
-                        }}
-                    ]
-                },
-                {
-                    name: 'hunt',
-                    chance: 0.2,
-                    title: '🎯 Buffalo Herd!',
-                    text: `You see a buffalo herd!\nYour hunters can try to shoot for meat.`,
-                    choices: [
-                        { text: '✓ Hunt for buffalo (+500 food)', action: () => {
-                            game.food += 500;
-                            game.continueTrail();
-                        }},
-                        { text: '✗ Skip hunting (save time)', action: () => {
-                            game.continueTrail();
-                        }}
-                    ]
-                },
-                {
-                    name: 'river',
-                    chance: 0.18,
-                    title: '⛈️ River Crossing!',
-                    text: `A wide river blocks your path.\nThe current is strong and dangerous.`,
-                    choices: [
-                        { text: '✓ Ford across (-100 food, risky)', action: () => {
-                            if (Math.random() < 0.6) {
-                                game.food -= 100;
-                                game.continueTrail();
-                            } else {
-                                game.showEvent('💀 DISASTER!', `The wagon overturned in the river!\nYou lost supplies and an ox!`, [
-                                    { text: 'CONTINUE', action: () => {
-                                        game.food -= 300;
-                                        game.oxen -= 1;
-                                        game.continueTrail();
-                                    }}
-                                ]);
-                            }
-                        }},
-                        { text: '✓ Caulk wagon and float (+2 days, safer)', action: () => {
-                            game.daysSpent += 2;
-                            game.continueTrail();
-                        }}
-                    ]
-                },
-                {
-                    name: 'bandits',
-                    chance: 0.1,
-                    title: '🏴‍☠️ Rough Strangers Approaching!',
-                    text: `Rough-looking travelers approach your camp!\nThey might rob you.`,
-                    choices: [
-                        { text: '✗ Stand and fight (risky)', action: () => {
-                            if (Math.random() < 0.5) {
-                                game.showEvent('💀 AMBUSHED!', `The bandits overwhelmed your party!\nYou lost $400 and supplies!`, [
-                                    { text: 'CONTINUE', action: () => {
-                                        game.money -= 400;
-                                        game.food -= 200;
-                                        game.continueTrail();
-                                    }}
-                                ]);
-                            } else {
-                                game.continueTrail();
-                            }
-                        }},
-                        { text: '✓ Trade with them (-$100, +200 food)', action: () => {
-                            game.money -= 100;
-                            game.food += 200;
-                            game.continueTrail();
-                        }}
-                    ]
-                },
-                {
-                    name: 'oxen_dies',
-                    chance: 0.12,
-                    title: '🐴 Oxen Died!',
-                    text: `One of your oxen has died from exhaustion.\nYour wagon will move slower now.`,
-                    choices: [
-                        { text: 'CONTINUE', action: () => {
-                            game.oxen -= 1;
-                            game.continueTrail();
-                        }}
-                    ]
-                },
-                {
-                    name: 'weather',
-                    chance: 0.08,
-                    title: '🌪️ Severe Weather!',
-                    text: `A terrible storm blocks the trail.\nYou lose a day of travel.`,
-                    choices: [
-                        { text: 'CONTINUE', action: () => {
-                            game.daysSpent += 1;
-                            game.continueTrail();
-                        }}
-                    ]
+                this.frameCount = 0;
+                this.lastTime = Date.now();
+
+                this.setupLights();
+                this.createAdvancedEnvironment();
+                this.createParticleSystem();
+
+                this.gameData = {
+                    stage: 0,
+                    food: 1000,
+                    money: 1600,
+                    oxen: 4,
+                    health: 100,
+                    distance: 0,
+                    members: [],
+                    totalDistance: 2000,
+                    correctAnswers: 0
+                };
+
+                this.locations = [
+                    { name: 'INDEPENDENCE, MISSOURI', distance: 0 },
+                    { name: 'FORT KEARNY, NEBRASKA', distance: 300 },
+                    { name: 'FORT LARAMIE, WYOMING', distance: 645 },
+                    { name: 'FORT HALL, IDAHO', distance: 1197 },
+                    { name: 'THE DALLES, OREGON', distance: 1665 },
+                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000 }
+                ];
+
+                this.questions = [
+                    { q: "What year is it?", w: ["1947", "1747", "1847"], correct: 2 },
+                    { q: "How many miles is the Oregon Trail?", w: ["1000", "3000", "2000"], correct: 2 },
+                    { q: "Which river near Fort Laramie?", w: ["Colorado", "Platte", "Snake"], correct: 1 },
+                    { q: "Why go west?", w: ["Gold", "Land & opportunity", "Running"], correct: 1 },
+                    { q: "What pulls wagons?", w: ["Horses", "Oxen", "Mules"], correct: 1 },
+                    { q: "Journey time?", w: ["1-2 months", "4-6 months", "1 year"], correct: 1 },
+                    { q: "Deadly disease?", w: ["Flu", "Cholera", "Measles"], correct: 1 },
+                    { q: "Before Oregon?", w: ["California", "Idaho", "Washington"], correct: 1 }
+                ];
+
+                window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
+            }
+
+            setupLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+
+                this.sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                this.sunLight.position.set(100, 150, 100);
+                this.sunLight.castShadow = true;
+                this.sunLight.shadow.mapSize.width = 2048;
+                this.sunLight.shadow.mapSize.height = 2048;
+                this.sunLight.shadow.camera.far = 500;
+                this.sunLight.shadow.camera.left = -200;
+                this.sunLight.shadow.camera.right = 200;
+                this.sunLight.shadow.camera.top = 200;
+                this.sunLight.shadow.camera.bottom = -200;
+                this.scene.add(this.sunLight);
+
+                const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x7cb342, 0.5);
+                this.scene.add(hemiLight);
+            }
+
+            createAdvancedEnvironment() {
+                this.createTerrainWithNoise();
+                this.createSky();
+                this.createForest();
+                this.wagon = this.createAdvancedWagon();
+                this.scene.add(this.wagon);
+                this.createClouds();
+            }
+
+            createTerrainWithNoise() {
+                const geometry = new THREE.PlaneGeometry(400, 400, 128, 128);
+                const positionAttribute = geometry.getAttribute('position');
+                for (let i = 0; i < positionAttribute.count; i++) {
+                    const x = positionAttribute.getX(i);
+                    const z = positionAttribute.getZ(i);
+                    const noise = Math.sin(x * 0.01) * Math.cos(z * 0.01) * 5;
+                    positionAttribute.setY(i, noise);
                 }
-            ],
+                positionAttribute.needsUpdate = true;
+                geometry.computeVertexNormals();
 
-            startGame() {
-                this.playerName = document.getElementById('playerName').value || 'Traveler';
-                document.getElementById('titleScreen').classList.remove('active');
-                document.getElementById('gameScreen').classList.add('active');
-                this.gameActive = true;
-                this.updateDisplay();
-                this.advanceTrail();
-            },
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x7cb342,
+                    roughness: 0.8,
+                    metalness: 0.1,
+                    flatShading: false
+                });
 
-            advanceTrail() {
-                if (this.distance >= this.totalDistance) {
+                const terrain = new THREE.Mesh(geometry, material);
+                terrain.castShadow = true;
+                terrain.receiveShadow = true;
+                this.scene.add(terrain);
+            }
+
+            createSky() {
+                const skyGeometry = new THREE.SphereGeometry(1000, 64, 64);
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(1, '#E0F6FF');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 512, 512);
+                const texture = new THREE.CanvasTexture(canvas);
+                const skyMaterial = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    emissive: 0x87CEEB,
+                    side: THREE.BackSide
+                });
+                const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+                this.scene.add(sky);
+            }
+
+            createForest() {
+                for (let i = 0; i < 30; i++) {
+                    const x = (Math.random() - 0.5) * 300;
+                    const z = (Math.random() - 0.5) * 300 - 50;
+                    this.createAdvancedTree(x, 0, z);
+                }
+            }
+
+            createAdvancedTree(x, y, z) {
+                const trunkGeometry = new THREE.CylinderGeometry(3, 4, 20, 16);
+                const trunkMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x654321,
+                    roughness: 0.9,
+                    metalness: 0
+                });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.set(x, y + 10, z);
+                trunk.castShadow = true;
+                trunk.receiveShadow = true;
+                this.scene.add(trunk);
+
+                const foliageGeometry1 = new THREE.ConeGeometry(15, 30, 32);
+                const foliageMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2d5016,
+                    roughness: 0.7,
+                    metalness: 0
+                });
+                const foliage1 = new THREE.Mesh(foliageGeometry1, foliageMaterial);
+                foliage1.position.set(x, y + 28, z);
+                foliage1.castShadow = true;
+                foliage1.receiveShadow = true;
+                this.scene.add(foliage1);
+
+                const foliageGeometry2 = new THREE.ConeGeometry(10, 20, 32);
+                const foliage2 = new THREE.Mesh(foliageGeometry2, foliageMaterial);
+                foliage2.position.set(x, y + 40, z);
+                foliage2.castShadow = true;
+                foliage2.receiveShadow = true;
+                this.scene.add(foliage2);
+            }
+
+            createAdvancedWagon() {
+                const group = new THREE.Group();
+                const bodyGeometry = new THREE.BoxGeometry(12, 6, 6);
+                const bodyMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xa0522d,
+                    roughness: 0.6,
+                    metalness: 0.1
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 4;
+                body.castShadow = true;
+                body.receiveShadow = true;
+                group.add(body);
+
+                const coverGeometry = new THREE.CylinderGeometry(6, 6, 12, 16);
+                const coverMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xFFFACD,
+                    roughness: 0.4,
+                    metalness: 0
+                });
+                const cover = new THREE.Mesh(coverGeometry, coverMaterial);
+                cover.rotation.z = Math.PI / 2;
+                cover.position.set(0, 6, 0);
+                cover.castShadow = true;
+                cover.receiveShadow = true;
+                group.add(cover);
+
+                for (let x of [-5, 5]) {
+                    for (let z of [-3, 3]) {
+                        this.createWheel(group, x, 2.5, z);
+                    }
+                }
+
+                return group;
+            }
+
+            createWheel(parent, x, y, z) {
+                const wheelGeometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 32);
+                const wheelMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2c2c2c,
+                    roughness: 0.8,
+                    metalness: 0.3
+                });
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(x, y, z);
+                wheel.castShadow = true;
+                wheel.receiveShadow = true;
+                parent.add(wheel);
+            }
+
+            createClouds() {
+                for (let i = 0; i < 5; i++) {
+                    const cloudGroup = new THREE.Group();
+                    const x = (Math.random() - 0.5) * 600;
+                    const y = 100 + Math.random() * 100;
+                    const z = (Math.random() - 0.5) * 400 - 200;
+
+                    for (let j = 0; j < 3; j++) {
+                        const cloudGeometry = new THREE.SphereGeometry(20 + j * 10, 8, 8);
+                        const cloudMaterial = new THREE.MeshStandardMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.6,
+                            emissive: 0xffffff
+                        });
+                        const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                        cloudMesh.position.x = j * 15;
+                        cloudGroup.add(cloudMesh);
+                    }
+
+                    cloudGroup.position.set(x, y, z);
+                    this.scene.add(cloudGroup);
+                }
+            }
+
+            createParticleSystem() {
+                this.particles = [];
+            }
+
+            updateWagonPosition() {
+                const progress = this.gameData.distance / this.gameData.totalDistance;
+                const newZ = -150 + (progress * 300);
+                this.wagon.position.z = newZ;
+                this.wagon.position.x = Math.sin(Date.now() * 0.0005) * 2;
+                this.wagon.rotation.z = Math.sin(Date.now() * 0.0005) * 0.02;
+                this.camera.position.z = newZ + 40;
+            }
+
+            updateUI() {
+                document.getElementById('locationDisplay').textContent = 
+                    this.locations[Math.min(this.gameData.stage, this.locations.length-1)].name;
+
+                const statsHTML = `
+                    <div class="stat-box"><div class="stat-label">📦 Food</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div></div>
+                    <div class="stat-box"><div class="stat-label">🐴 Oxen</div><div class="stat-value">${this.gameData.oxen}</div></div>
+                    <div class="stat-box"><div class="stat-label">💰 Money</div><div class="stat-value">$${Math.floor(this.gameData.money)}</div></div>
+                    <div class="stat-box"><div class="stat-label">❤️ Health</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.health))}%</div></div>
+                    <div class="stat-box"><div class="stat-label">🧠 Correct</div><div class="stat-value">${this.gameData.correctAnswers}</div></div>
+                `;
+                document.getElementById('statsPanel').innerHTML = statsHTML;
+
+                const progress = (this.gameData.distance / this.gameData.totalDistance) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+            }
+
+            askQuestion() {
+                const q = this.questions[Math.floor(Math.random() * this.questions.length)];
+                let html = `<div class="question-title">📚 HISTORY CHALLENGE!</div>
+                           <div class="question-text">${q.q}</div>
+                           <div class="answer-options">`;
+                
+                q.w.forEach((answer, i) => {
+                    html += `<button class="primary" onclick="game.answerQuestion(${i}, ${q.correct})">
+                             ${answer}</button>`;
+                });
+                html += '</div>';
+
+                document.getElementById('questionPanel').innerHTML = html;
+                document.getElementById('questionPanel').style.display = 'block';
+                document.getElementById('eventPanel').style.display = 'none';
+            }
+
+            answerQuestion(choice, correct) {
+                const qPanel = document.getElementById('questionPanel');
+                if (choice === correct) {
+                    this.gameData.correctAnswers++;
+                    this.gameData.food += 100;
+                    qPanel.innerHTML = `<div class="question-title" style="color: #44A08D;">✅ CORRECT!</div>
+                                       <div class="question-text">Your party found supplies!</div>
+                                       <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
+                } else {
+                    this.gameData.food -= 50;
+                    qPanel.innerHTML = `<div class="question-title" style="color: #FF6B6B;">❌ WRONG!</div>
+                                       <div class="question-text">Lost supplies!</div>
+                                       <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
+                }
+            }
+
+            presentEvent() {
+                if (this.gameData.stage >= this.locations.length) {
                     this.endGame(true);
                     return;
                 }
 
-                if (this.food <= 0 || this.health <= 0 || this.oxen <= 0) {
+                this.updateUI();
+
+                const eventNum = Math.random();
+                if (eventNum < 0.4) this.askQuestion();
+                else if (eventNum < 0.6) this.illnessEvent();
+                else if (eventNum < 0.8) this.riverCrossing();
+                else this.continueJourney();
+            }
+
+            illnessEvent() {
+                this.gameData.health -= 15;
+                const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🤒 ${person} is ill!</div>
+                    <div class="event-text">Answer the question to help them recover!</div>
+                    <button class="primary" onclick="game.askQuestion()">HELP THEM</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            riverCrossing() {
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">⛈️ River Crossing!</div>
+                    <div class="event-text">Answer to cross safely!</div>
+                    <button class="primary" onclick="game.askQuestion()">ANSWER QUESTION</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            continueJourney() {
+                document.getElementById('questionPanel').style.display = 'none';
+                document.getElementById('eventPanel').style.display = 'none';
+                this.gameData.stage++;
+                this.gameData.distance = this.locations[this.gameData.stage].distance;
+                this.gameData.food -= 30;
+
+                if (this.gameData.food <= 0 || this.gameData.health <= 0) {
                     this.endGame(false);
                     return;
                 }
 
-                // Trigger random events
-                for (let event of this.events) {
-                    if (Math.random() < event.chance) {
-                        this.showEvent(event.title, event.text, event.choices);
-                        return;
-                    }
-                }
-
-                // No event, continue trail
-                this.continueTrail();
-            },
-
-            continueTrail() {
-                // Travel
-                this.distance += 20;
-                this.daysSpent += 1;
-                this.food -= 5 + (this.oxen * 0.5);
-                this.health -= 0.5;
-
-                this.updateDisplay();
-
-                // Check for new location
-                let newLocation = 0;
-                for (let i = 0; i < this.locations.length; i++) {
-                    if (this.distance >= this.locations[i].distance) {
-                        newLocation = i;
-                    }
-                }
-
-                if (newLocation !== this.currentLocation) {
-                    this.currentLocation = newLocation;
-                    this.showEvent(`✨ NEW LOCATION`, `You've arrived at ${this.locations[newLocation].name}!`, [
-                        { text: 'CONTINUE', action: () => this.advanceTrail() }
-                    ]);
-                    return;
-                }
-
-                setTimeout(() => this.advanceTrail(), 1500);
-            },
-
-            showEvent(title, text, choices) {
-                this.inEvent = true;
-                document.getElementById('eventTitle').textContent = title;
-                document.getElementById('eventText').textContent = text;
-                const choicesDiv = document.getElementById('choices');
-                choicesDiv.innerHTML = '';
-                
-                choices.forEach(choice => {
-                    const btn = document.createElement('button');
-                    btn.className = 'choice-btn';
-                    btn.textContent = choice.text;
-                    btn.onclick = choice.action;
-                    choicesDiv.appendChild(btn);
-                });
-            },
-
-            updateDisplay() {
-                document.getElementById('locationName').textContent = this.locations[this.currentLocation].name;
-                document.getElementById('distance').textContent = Math.floor(this.distance);
-                document.getElementById('progressText').textContent = Math.floor(this.distance);
-                document.getElementById('progressFill').style.width = (this.distance / this.totalDistance * 100) + '%';
-                document.getElementById('food').textContent = Math.max(0, Math.floor(this.food));
-                document.getElementById('money').textContent = Math.floor(this.money);
-                document.getElementById('oxen').textContent = Math.max(0, this.oxen);
-                document.getElementById('health').textContent = Math.max(0, Math.floor(this.health));
-                
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                const month = ((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12) + 1;
-                document.getElementById('date').textContent = monthNames[month - 1] + ' ' + this.date.year;
-            },
+                setTimeout(() => this.presentEvent(), 800);
+            }
 
             endGame(success) {
-                this.gameActive = false;
-                document.getElementById('gameScreen').classList.remove('active');
-                document.getElementById('endScreen').classList.add('active');
-
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                const month = monthNames[((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12)];
+                this.goToScreen('endScreen');
+                const endContent = document.getElementById('endContent');
 
                 if (success) {
-                    document.getElementById('endEmoji').textContent = '🎉';
-                    document.getElementById('endTitle').textContent = `${this.playerName}, you reached Oregon!`;
-                    document.getElementById('endStats').innerHTML = `
-                        <strong>🎊 SUCCESS! 🎊</strong><br><br>
-                        Your party made it 2000 miles in ${this.daysSpent} days!<br><br>
-                        <strong>Final Supplies:</strong><br>
-                        • Food: ${Math.floor(this.food)} lbs<br>
-                        • Money: $${Math.floor(this.money)}<br>
-                        • Oxen: ${this.oxen}<br><br>
-                        <strong>Arrival:</strong> ${month}<br><br>
-                        Congratulations! You survived the Oregon Trail!
+                    endContent.innerHTML = `
+                        <h1 style="font-size: 3em; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255,215,0,0.6);">🎉 YOU REACHED OREGON! 🎉</h1>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
+                            <p style="font-size: 1.3em; margin-bottom: 20px;"><strong>MISSION ACCOMPLISHED!</strong></p>
+                            <p>Distance: ${this.gameData.distance} miles</p>
+                            <p>Final Food: ${Math.floor(this.gameData.food)} lbs</p>
+                            <p>Party Members: ${this.gameData.members.length}</p>
+                            <p style="margin-top: 20px; font-size: 1.2em; color: #FFD700;">📚 Correct Answers: ${this.gameData.correctAnswers}</p>
+                        </div>
+                        <button class="primary" onclick="location.reload()" style="margin-top: 30px;">PLAY AGAIN</button>
                     `;
                 } else {
-                    document.getElementById('endEmoji').textContent = '💀';
-                    document.getElementById('endTitle').textContent = `${this.playerName}'s journey ended...`;
-                    
-                    let cause = 'starvation';
-                    if (this.health <= 0) cause = 'illness';
-                    if (this.oxen <= 0) cause = 'inability to move (no oxen)';
-                    
-                    document.getElementById('deathMessage').textContent = `Your party died of ${cause}.`;
-                    document.getElementById('endStats').innerHTML = `
-                        <strong>💀 GAME OVER 💀</strong><br><br>
-                        Distance traveled: ${Math.floor(this.distance)} miles<br>
-                        Days on trail: ${this.daysSpent}<br>
-                        Food remaining: ${Math.floor(this.food)} lbs<br>
-                        Health: ${Math.floor(this.health)}%<br><br>
-                        Your grave rests on the Oregon Trail...
+                    endContent.innerHTML = `
+                        <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY ENDED ⚰️</h1>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
+                            <p>Distance: ${this.gameData.distance} miles</p>
+                            <p>Questions Answered: ${this.gameData.correctAnswers}</p>
+                        </div>
+                        <button class="primary" onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
                     `;
                 }
             }
-        };
+
+            goToScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            startJourney() {
+                this.gameData.members = [
+                    document.getElementById('leader').value || 'Leader',
+                    document.getElementById('member2').value || 'Companion 1',
+                    document.getElementById('member3').value || 'Companion 2',
+                    document.getElementById('member4').value || 'Companion 3'
+                ];
+                this.gameData.stage = 0;
+                this.gameData.distance = 0;
+                this.goToScreen('gameScreen');
+                setTimeout(() => this.presentEvent(), 500);
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            updateFPS() {
+                this.frameCount++;
+                const now = Date.now();
+                if (now - this.lastTime >= 1000) {
+                    document.getElementById('fpsCounter').textContent = `FPS: ${this.frameCount}`;
+                    this.frameCount = 0;
+                    this.lastTime = now;
+                }
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.updateWagonPosition();
+                this.updateFPS();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        const game = new AdvancedOregonTrail();
     </script>
 </body>
 </html>
