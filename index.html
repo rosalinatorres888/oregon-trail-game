@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Oregon Trail - Classic Edition</title>
+    <title>Oregon Trail - 3D HD Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,739 +13,657 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: #1a1a1a;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: #00FF00;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
         }
 
-        .game-container {
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas {
+            display: block;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 900px;
-            background: #000;
-            border: 3px solid #00FF00;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-        }
-
-        .header {
-            background: #000;
-            color: #00FF00;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 3px solid #00FF00;
-            font-weight: bold;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            letter-spacing: 3px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px #00FF00;
-        }
-
-        .header p {
-            font-size: 0.9em;
-            opacity: 0.8;
+            height: 100%;
+            pointer-events: none;
         }
 
         .screen {
             display: none;
-            padding: 30px;
-            min-height: 500px;
-            animation: scanlines 0.3s;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: auto;
+            z-index: 100;
         }
 
         .screen.active {
-            display: block;
-        }
-
-        @keyframes scanlines {
-            0% { opacity: 0.7; }
-            100% { opacity: 1; }
+            display: flex;
         }
 
         .title-screen {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            flex-direction: column;
+            text-align: center;
+            gap: 40px;
+            padding: 40px;
         }
 
-        .wagon-art {
-            font-size: 2em;
-            line-height: 1.2;
-            margin: 20px 0;
-            font-family: monospace;
-            white-space: pre;
-            text-align: center;
+        .title-screen h1 {
+            font-size: 4em;
+            font-weight: bold;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .title-art {
+            font-size: 8em;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .intro-text {
-            font-size: 1em;
+            font-size: 1.3em;
             max-width: 700px;
             line-height: 1.8;
-            text-align: center;
-            margin: 20px 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
         }
 
-        .party-setup {
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+        }
+
+        .party-setup-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 40px;
+            gap: 30px;
+        }
+
+        .party-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
         }
 
         .member-input {
-            background: #111;
-            padding: 15px;
-            border: 2px solid #00FF00;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
         }
 
         .member-input label {
-            color: #00FF00;
+            display: block;
+            margin-bottom: 10px;
             font-weight: bold;
+            font-size: 0.95em;
         }
 
         .member-input input {
             width: 100%;
-            padding: 8px;
-            margin-top: 8px;
-            background: #000;
-            border: 1px solid #00FF00;
-            color: #00FF00;
-            font-family: monospace;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 1em;
         }
 
-        .member-input input::placeholder {
-            color: #00660066;
-        }
-
-        .scene {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .wagon-scene {
-            font-size: 3em;
-            margin: 20px 0;
-        }
-
-        .location-name {
-            font-size: 1.3em;
-            color: #00FF00;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00FF00;
+        .game-screen {
+            justify-content: flex-start;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
         }
 
         .stats-panel {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin-bottom: 20px;
-            font-size: 0.95em;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            pointer-events: auto;
         }
 
-        .stat {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            color: #00FF00;
+        .stat-box {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .stat-label {
+            font-size: 0.9em;
+            color: #4ECDC4;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 2em;
             font-weight: bold;
+            color: #fff;
         }
 
-        .event-message {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin: 20px 0;
-            font-size: 1em;
-            line-height: 1.8;
-            color: #00FF00;
-            min-height: 100px;
+        .event-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 700px;
+            margin: 0 auto;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
         }
 
-        .event-message.death {
-            border-color: #FF0000;
-            color: #FF0000;
-            background: #1a0000;
-        }
-
-        .event-message.warning {
-            border-color: #FFFF00;
-            color: #FFFF00;
-            background: #1a1a00;
-        }
-
-        .event-message.good {
-            border-color: #00FF00;
-            color: #00FF00;
-        }
-
-        .options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button {
-            background: #000;
-            color: #00FF00;
-            border: 2px solid #00FF00;
-            padding: 12px 20px;
-            font-size: 0.95em;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: #00FF00;
-            color: #000;
-            box-shadow: 0 0 10px #00FF00;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .death-screen {
-            text-align: center;
-        }
-
-        .death-message {
+        .event-title {
             font-size: 1.8em;
-            color: #FF0000;
-            margin: 30px 0;
+            margin-bottom: 15px;
+            color: #FF8E53;
             font-weight: bold;
-            text-shadow: 0 0 10px #FF0000;
         }
 
-        .grave-art {
-            font-size: 3em;
-            margin: 20px 0;
-            line-height: 1.4;
-        }
-
-        .memorial {
-            background: #1a0000;
-            border: 2px solid #FF0000;
-            padding: 20px;
-            margin: 20px 0;
-            font-size: 0.9em;
-            line-height: 1.8;
-        }
-
-        .memorial-name {
-            color: #FF0000;
-            font-weight: bold;
+        .event-text {
             font-size: 1.1em;
-            margin-bottom: 10px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #ddd;
         }
 
-        .summary {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: left;
-            font-size: 0.9em;
+        .decision-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .location-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
         }
 
         .progress-bar {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .bar {
-            flex-grow: 1;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
             height: 15px;
-            background: #000;
-            border: 1px solid #00FF00;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .bar-fill {
+        .progress-fill {
             height: 100%;
-            background: #00FF00;
-            transition: width 0.3s;
-        }
-
-        .miles-traveled {
-            min-width: 100px;
-            text-align: right;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            transition: width 0.5s;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <h1>THE OREGON TRAIL</h1>
-            <p>A Journey of Strategy, Survival... and Death</p>
-        </div>
-
-        <!-- Title Screen -->
-        <div class="screen active" id="titleScreen">
-            <div class="title-screen">
-                <div class="wagon-art">      ~~~o~~~
-      ~^~^~^~
-    ~~|~~~|~~
-    ~~O~~~O~~</div>
-                <div class="intro-text">
-                    <p>YOU HAVE CHOSEN TO JOURNEY WESTWARD</p>
-                    <p style="margin-top: 15px;">FROM INDEPENDENCE, MISSOURI TO OREGON TERRITORY</p>
-                    <p style="margin-top: 15px; font-size: 0.9em;">The frontier will test your courage, judgment, and will to survive.</p>
-                    <p style="margin-top: 10px; font-size: 0.85em; color: #FFFF00;">Your decisions will determine whether your party lives... or perishes along the trail.</p>
-                </div>
-                <button onclick="startGame()" style="font-size: 1.1em; padding: 15px 40px;">BEGIN</button>
-            </div>
-        </div>
-
-        <!-- Party Setup Screen -->
-        <div class="screen" id="partySetup">
-            <h2 style="text-align: center; margin-bottom: 30px;">ENTER YOUR PARTY</h2>
-            <div class="party-setup">
-                <div class="member-input">
-                    <label>LEADER NAME:</label>
-                    <input type="text" id="leader" placeholder="Your name" value="Narbe's Students">
-                </div>
-                <div class="member-input">
-                    <label>COMPANION 1:</label>
-                    <input type="text" id="member2" placeholder="Name" value="Teacher's Pet">
-                </div>
-                <div class="member-input">
-                    <label>COMPANION 2:</label>
-                    <input type="text" id="member3" placeholder="Name" value="Class Clown">
-                </div>
-                <div class="member-input">
-                    <label>COMPANION 3:</label>
-                    <input type="text" id="member4" placeholder="Name" value="Brave Soul">
-                </div>
-            </div>
-            <div style="text-align: center; gap: 15px; display: flex; justify-content: center;">
-                <button onclick="goToScreen('titleScreen')">BACK</button>
-                <button onclick="beginJourney()">DEPART →</button>
-            </div>
-        </div>
-
-        <!-- Main Game Screen -->
-        <div class="screen" id="gameScreen">
-            <div class="progress-bar">
-                <span>PROGRESS:</span>
-                <div class="bar">
-                    <div class="bar-fill" id="progressFill"></div>
-                </div>
-                <span class="miles-traveled"><span id="milesDisplay">0</span>/2000 MILES</span>
-            </div>
-
-            <div class="scene">
-                <div class="wagon-scene">🚐</div>
-                <div class="location-name" id="location"></div>
-            </div>
-
-            <div class="stats-panel">
-                <div class="stat">
-                    <span class="stat-label">FOOD:</span>
-                    <span><span id="food">1000</span> LBS</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">OXEN:</span>
-                    <span><span id="oxen">4</span></span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">CASH:</span>
-                    <span>$<span id="money">1600</span></span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">HEALTH:</span>
-                    <span id="healthStatus">EXCELLENT</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">MORALE:</span>
-                    <span id="morale">HIGH</span>
+    <div id="gameContainer">
+        <div class="ui-overlay">
+            <div id="titleScreen" class="screen active title-screen">
+                <div class="title-art">🚐</div>
+                <h1>THE OREGON TRAIL</h1>
+                <p class="intro-text">
+                    Journey across 2,000 miles of untamed wilderness.<br>
+                    Face illness, starvation, and impossible choices.<br>
+                    <strong>Can your party survive?</strong>
+                </p>
+                <div class="button-group">
+                    <button class="primary" onclick="game.goToScreen('partySetup')">BEGIN JOURNEY</button>
                 </div>
             </div>
 
-            <div id="eventContainer"></div>
-            <div id="decisionContainer"></div>
-        </div>
+            <div id="partySetup" class="screen party-setup-screen">
+                <h2 style="font-size: 2.5em;">Name Your Party</h2>
+                <div class="party-grid">
+                    <div class="member-input">
+                        <label>👤 LEADER</label>
+                        <input type="text" id="leader" placeholder="Your name" value="Narbe's Students">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 1</label>
+                        <input type="text" id="member2" placeholder="Name" value="Teacher's Pet">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 2</label>
+                        <input type="text" id="member3" placeholder="Name" value="Class Clown">
+                    </div>
+                    <div class="member-input">
+                        <label>👥 COMPANION 3</label>
+                        <input type="text" id="member4" placeholder="Name" value="Brave Soul">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="game.goToScreen('titleScreen')">← BACK</button>
+                    <button class="primary" onclick="game.startJourney()">DEPART →</button>
+                </div>
+            </div>
 
-        <!-- End Screen -->
-        <div class="screen" id="endScreen">
-            <div class="death-screen">
-                <div class="death-message" id="endTitle"></div>
-                <div class="grave-art" id="graveArt"></div>
-                <div class="summary" id="summaryContent"></div>
-                <button onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
+            <div id="gameScreen" class="screen game-screen">
+                <div class="location-display" id="locationDisplay">Loading...</div>
+                <div class="stats-panel" id="statsPanel"></div>
+                <div class="event-panel" id="eventPanel" style="display:none;"></div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+
+            <div id="endScreen" class="screen" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); justify-content: center; align-items: center; flex-direction: column; gap: 30px; padding: 40px; text-align: center;">
+                <div id="endContent"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const game = {
-            stage: 0,
-            food: 1000,
-            money: 1600,
-            oxen: 4,
-            partyHealth: 100,
-            morale: 100,
-            distanceTraveled: 0,
-            members: [],
-            deadMembers: [],
-            totalDistance: 2000,
-            daysPassed: 0
-        };
+        class OregonTrailGame {
+            constructor() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setClearColor(0x87CEEB);
+                document.getElementById('gameContainer').insertBefore(this.renderer.domElement, document.getElementById('gameContainer').firstChild);
 
-        const locations = [
-            { name: 'INDEPENDENCE, MISSOURI', distance: 0 },
-            { name: 'FORT KEARNY, NEBRASKA', distance: 300 },
-            { name: 'FORT LARAMIE, WYOMING', distance: 645 },
-            { name: 'FORT HALL, IDAHO', distance: 1197 },
-            { name: 'THE DALLES, OREGON', distance: 1665 },
-            { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000 }
-        ];
+                this.camera.position.set(0, 8, 20);
+                this.camera.lookAt(0, 0, 0);
 
-        const causes = [
-            'DYSENTERY',
-            'CHOLERA',
-            'TYPHOID',
-            'PNEUMONIA',
-            'EXHAUSTION',
-            'SNAKE BITE',
-            'ACCIDENTAL GUNSHOT',
-            'FEVER'
-        ];
+                this.setupLights();
+                this.createEnvironment();
 
-        function startGame() {
-            goToScreen('partySetup');
-        }
+                this.gameData = {
+                    stage: 0,
+                    food: 1000,
+                    money: 1600,
+                    oxen: 4,
+                    health: 100,
+                    distance: 0,
+                    members: [],
+                    totalDistance: 2000
+                };
 
-        function beginJourney() {
-            game.members = [
-                document.getElementById('leader').value || 'Leader',
-                document.getElementById('member2').value || 'Companion 1',
-                document.getElementById('member3').value || 'Companion 2',
-                document.getElementById('member4').value || 'Companion 3'
-            ];
-            game.stage = 0;
-            goToScreen('gameScreen');
-            presentEvent();
-        }
+                this.locations = [
+                    { name: 'INDEPENDENCE, MISSOURI', distance: 0 },
+                    { name: 'FORT KEARNY, NEBRASKA', distance: 300 },
+                    { name: 'FORT LARAMIE, WYOMING', distance: 645 },
+                    { name: 'FORT HALL, IDAHO', distance: 1197 },
+                    { name: 'THE DALLES, OREGON', distance: 1665 },
+                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000 }
+                ];
 
-        function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function presentEvent() {
-            if (game.stage >= locations.length) {
-                endGame(true);
-                return;
+                window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
             }
 
-            if (game.members.length === 0) {
-                endGame(false);
-                return;
+            setupLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 20, 10);
+                this.scene.add(directionalLight);
             }
 
-            updateStats();
-            const eventNum = Math.random();
+            createEnvironment() {
+                // Ground
+                const groundGeometry = new THREE.PlaneGeometry(100, 100);
+                const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x7cb342 });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                this.scene.add(ground);
 
-            if (eventNum < 0.15) illness();
-            else if (eventNum < 0.25) riverCrossing();
-            else if (eventNum < 0.35) hunterSuccess();
-            else if (eventNum < 0.45) oxenDeath();
-            else if (eventNum < 0.55) stampede();
-            else if (eventNum < 0.70) continueTrail();
-            else thievesAttack();
-        }
-
-        function illness() {
-            const person = game.members[Math.floor(Math.random() * game.members.length)];
-            const cause = causes[Math.floor(Math.random() * causes.length)];
-            
-            if (Math.random() < 0.4) {
-                // Death
-                game.members = game.members.filter(m => m !== person);
-                game.deadMembers.push({ name: person, cause: cause });
-                game.morale = Math.max(0, game.morale - 30);
-                
-                showEvent(
-                    `${person.toUpperCase()} HAS DIED`,
-                    `${person} has succumbed to ${cause}.\n\nYour party buries ${person} along the trail.\nThey will rest here forever.`,
-                    'death'
-                );
-            } else {
-                // Sick
-                game.partyHealth = Math.max(0, game.partyHealth - 15);
-                game.morale = Math.max(0, game.morale - 10);
-                
-                showEvent(
-                    `${person.toUpperCase()} IS VERY ILL`,
-                    `${person} has come down with ${cause}.\n\nThe party must rest for several days.\nYou hope ${person} recovers...`,
-                    'warning'
-                );
-            }
-        }
-
-        function hunterSuccess() {
-            const catch_amount = 100 + Math.floor(Math.random() * 200);
-            game.food += catch_amount;
-            game.morale = Math.min(100, game.morale + 10);
-            
-            showEvent(
-                'SUCCESSFUL HUNT',
-                `Your party hunted ${catch_amount} lbs of game!\n\nMorale is high. Bellies are full.`,
-                'good'
-            );
-        }
-
-        function oxenDeath() {
-            const num = Math.random() < 0.6 ? 1 : 2;
-            game.oxen = Math.max(1, game.oxen - num);
-            game.morale = Math.max(0, game.morale - 15);
-            
-            showEvent(
-                'OXEN DIED',
-                `${num} of your oxen have died from exhaustion.\n\nYou lose valuable pulling power.`,
-                'warning'
-            );
-        }
-
-        function riverCrossing() {
-            showEvent(
-                'RIVER CROSSING AHEAD',
-                `A wide river blocks your path. The current is strong.\n\nHow will you proceed?`,
-                'warning',
-                null,
-                [
-                    {
-                        text: 'FORD IT (RISKY)',
-                        action: () => {
-                            if (Math.random() < 0.5) {
-                                game.food -= 50;
-                                showEvent('DISASTER!', 'The wagon overturns!\nYou lose food and supplies crossing the river.', 'death', continueTrail);
-                            } else {
-                                showEvent('SUCCESS', 'You crossed safely!', 'good', continueTrail);
-                            }
-                        }
-                    },
-                    {
-                        text: 'FLOAT IT (SAFE)',
-                        action: () => {
-                            game.daysPassed += 2;
-                            showEvent('SAFE CROSSING', 'You caulked the wagon and floated across.\nNo supplies lost, but it took extra time.', 'good', continueTrail);
-                        }
-                    }
-                ]
-            );
-        }
-
-        function stampede() {
-            showEvent(
-                'BUFFALO STAMPEDE!',
-                'A massive herd of buffalo is charging toward your camp!\n\nYour party panics!',
-                'warning',
-                null,
-                [
-                    {
-                        text: 'STAND YOUR GROUND',
-                        action: () => {
-                            if (Math.random() < 0.3) {
-                                game.oxen = Math.max(1, game.oxen - 1);
-                                showEvent('CHAOS!', 'The stampede kills one of your oxen!\nBut your party survives.', 'warning', continueTrail);
-                            } else {
-                                showEvent('SURVIVED!', 'The stampede passes by. Lucky escape!', 'good', continueTrail);
-                            }
-                        }
-                    },
-                    {
-                        text: 'RUN FOR THE HILLS',
-                        action: () => {
-                            game.food -= 100;
-                            showEvent('LOST SUPPLIES', 'Your party scrambles away!\nBut you abandon food and supplies in the panic.', 'death', continueTrail);
-                        }
-                    }
-                ]
-            );
-        }
-
-        function thievesAttack() {
-            showEvent(
-                'BANDITS SPOTTED!',
-                'A group of rough-looking travelers approaches your camp...',
-                'warning',
-                null,
-                [
-                    {
-                        text: 'STAND AND FIGHT',
-                        action: () => {
-                            if (Math.random() < 0.4) {
-                                game.money -= 200;
-                                game.food -= 100;
-                                showEvent('AMBUSHED!', 'Your party was overwhelmed!\nYou lost money and supplies.', 'death', continueTrail);
-                            } else {
-                                showEvent('VICTORY!', 'Your party fought them off!\nYou kept your supplies.', 'good', continueTrail);
-                            }
-                        }
-                    },
-                    {
-                        text: 'TRADE WITH THEM',
-                        action: () => {
-                            game.money -= 150;
-                            game.food += 50;
-                            showEvent('TRADE COMPLETE', 'You traded some money for fresh supplies.\nA fair deal.', 'good', continueTrail);
-                        }
-                    }
-                ]
-            );
-        }
-
-        function continueTrail() {
-            game.stage++;
-            game.daysPassed += 10;
-            game.distanceTraveled = locations[game.stage].distance;
-            game.food -= 30 + (game.oxen * 3);
-
-            if (game.food <= 0) {
-                showEvent(
-                    'STARVATION',
-                    'Your party has run out of food.\n\nSome members are too weak to continue...',
-                    'death'
-                );
-                return;
-            }
-
-            if (game.members.length === 0) {
-                endGame(false);
-                return;
-            }
-
-            setTimeout(() => presentEvent(), 800);
-        }
-
-        function showEvent(title, description, type = 'warning', nextCallback = null, options = null) {
-            const eventEl = document.getElementById('eventContainer');
-            eventEl.innerHTML = `<div class="event-message ${type}">${description}</div>`;
-
-            const decisionEl = document.getElementById('decisionContainer');
-            decisionEl.innerHTML = '';
-
-            if (options && options.length > 0) {
-                let optionsHTML = '<div class="options">';
-                options.forEach((opt, i) => {
-                    optionsHTML += `<button onclick="window.game.eventCallbacks[${i}]()">${opt.text}</button>`;
+                // Sky
+                const skyGeometry = new THREE.SphereGeometry(200, 32, 32);
+                const skyMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x87CEEB,
+                    emissive: 0x87CEEB,
+                    side: THREE.BackSide
                 });
-                optionsHTML += '</div>';
-                decisionEl.innerHTML = optionsHTML;
-                window.game.eventCallbacks = options.map(o => o.action);
-            } else {
-                const nextBtn = nextCallback ? 
-                    `<button onclick="(${nextCallback.toString()})()">CONTINUE</button>` :
-                    '<button onclick="presentEvent()">CONTINUE</button>';
-                decisionEl.innerHTML = nextBtn;
-            }
-        }
+                const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+                this.scene.add(sky);
 
-        function updateStats() {
-            document.getElementById('food').textContent = Math.max(0, Math.floor(game.food));
-            document.getElementById('money').textContent = Math.floor(game.money);
-            document.getElementById('oxen').textContent = game.oxen;
-            document.getElementById('location').textContent = locations[game.stage].name;
-            document.getElementById('milesDisplay').textContent = game.distanceTraveled;
-            
-            const progress = (game.distanceTraveled / game.totalDistance) * 100;
-            document.getElementById('progressFill').style.width = progress + '%';
-
-            if (game.partyHealth <= 0) {
-                document.getElementById('healthStatus').textContent = 'CRITICAL';
-            } else if (game.partyHealth <= 30) {
-                document.getElementById('healthStatus').textContent = 'POOR';
-            } else if (game.partyHealth <= 60) {
-                document.getElementById('healthStatus').textContent = 'FAIR';
-            } else {
-                document.getElementById('healthStatus').textContent = 'EXCELLENT';
+                this.addScenery();
             }
 
-            if (game.morale <= 0) {
-                document.getElementById('morale').textContent = 'BROKEN';
-            } else if (game.morale <= 30) {
-                document.getElementById('morale').textContent = 'LOW';
-            } else if (game.morale <= 70) {
-                document.getElementById('morale').textContent = 'FAIR';
-            } else {
-                document.getElementById('morale').textContent = 'HIGH';
+            addScenery() {
+                // Trees
+                for (let i = 0; i < 8; i++) {
+                    this.addTree(
+                        (Math.random() - 0.5) * 60,
+                        0,
+                        (Math.random() - 0.5) * 60 - 30
+                    );
+                }
+
+                // Wagon
+                this.wagon = this.createWagon();
+                this.wagon.position.set(0, 0, 0);
+                this.scene.add(this.wagon);
             }
-        }
 
-        function endGame(success) {
-            goToScreen('endScreen');
-            const endTitle = document.getElementById('endTitle');
-            const summary = document.getElementById('summaryContent');
-            const graveArt = document.getElementById('graveArt');
+            addTree(x, y, z) {
+                // Trunk
+                const trunkGeometry = new THREE.CylinderGeometry(1, 1.2, 8, 8);
+                const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.set(x, y + 4, z);
+                this.scene.add(trunk);
 
-            if (success) {
-                endTitle.textContent = 'YOU HAVE REACHED OREGON!';
-                endTitle.style.color = '#00FF00';
-                graveArt.textContent = '🎉';
-                summary.style.borderColor = '#00FF00';
-                summary.innerHTML = `
-FINAL REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━
-PARTY SURVIVORS: ${game.members.length} of 4
-JOURNEY COMPLETE: ${game.distanceTraveled} miles
-DAYS ON TRAIL: ${game.daysPassed}
-FINAL FOOD: ${Math.floor(game.food)} lbs
-OXEN REMAINING: ${game.oxen}
+                // Foliage
+                const foliageGeometry = new THREE.ConeGeometry(4, 10, 8);
+                const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+                const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+                foliage.position.set(x, y + 10, z);
+                this.scene.add(foliage);
+            }
 
-SURVIVORS:
-${game.members.map(m => '✓ ' + m).join('\n')}
-${game.deadMembers.length > 0 ? '\n\nLOST ALONG THE WAY:\n' + game.deadMembers.map(m => '✗ ' + m.name + ' (died of ' + m.cause + ')').join('\n') : ''}
+            createWagon() {
+                const group = new THREE.Group();
 
-━━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR PARTY MADE IT TO OREGON!
-${game.members.length === 4 ? 'ALL PARTY MEMBERS SURVIVED!' : 'Some did not survive the journey.'}
+                // Body
+                const bodyGeometry = new THREE.BoxGeometry(8, 4, 4);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 2;
+                group.add(body);
+
+                // Cover
+                const coverGeometry = new THREE.CylinderGeometry(4.5, 4.5, 8, 8);
+                const coverMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFACD });
+                const cover = new THREE.Mesh(coverGeometry, coverMaterial);
+                cover.rotation.z = Math.PI / 2;
+                cover.position.set(0, 4.5, 0);
+                group.add(cover);
+
+                // Wheels
+                for (let x of [-3.5, 3.5]) {
+                    for (let z of [-2, 2]) {
+                        const wheelGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.8, 16);
+                        const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x333 });
+                        const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                        wheel.rotation.z = Math.PI / 2;
+                        wheel.position.set(x, 1.5, z);
+                        group.add(wheel);
+                    }
+                }
+
+                return group;
+            }
+
+            updateWagonPosition() {
+                const progress = this.gameData.distance / this.gameData.totalDistance;
+                const newZ = -50 + (progress * 100);
+                this.wagon.position.z = newZ;
+
+                // Animate slight sway
+                this.wagon.position.x = Math.sin(Date.now() * 0.001) * 0.5;
+                this.wagon.rotation.z = Math.sin(Date.now() * 0.001) * 0.05;
+            }
+
+            updateUI() {
+                document.getElementById('locationDisplay').textContent = 
+                    this.locations[this.gameData.stage].name;
+
+                const statsHTML = `
+                    <div class="stat-box">
+                        <div class="stat-label">📦 Food</div>
+                        <div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">🐴 Oxen</div>
+                        <div class="stat-value">${this.gameData.oxen}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">💰 Money</div>
+                        <div class="stat-value">$${Math.floor(this.gameData.money)}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">❤️ Health</div>
+                        <div class="stat-value">${Math.max(0, Math.floor(this.gameData.health))}%</div>
+                    </div>
                 `;
-            } else {
-                endTitle.textContent = 'YOU HAVE DIED OF DYSENTERY';
-                graveArt.textContent = '⚰️';
-                summary.innerHTML = `
-FINAL REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━
-PARTY STATUS: FAILED
-DISTANCE TRAVELED: ${game.distanceTraveled} miles
-DAYS SURVIVED: ${game.daysPassed}
+                document.getElementById('statsPanel').innerHTML = statsHTML;
 
-SURVIVORS: ${game.members.length}
-${game.members.length > 0 ? 'REMAINING:\n' + game.members.map(m => '✓ ' + m).join('\n') + '\n\n' : ''}
+                const progress = (this.gameData.distance / this.gameData.totalDistance) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+            }
 
-LOST: ${game.deadMembers.length}
-${game.deadMembers.length > 0 ? game.deadMembers.map(m => '✗ ' + m.name + ' (died of ' + m.cause + ')').join('\n') + '\n\n' : ''}
+            showEvent(title, text, options = null) {
+                const eventPanel = document.getElementById('eventPanel');
+                let html = `<div class="event-title">${title}</div><div class="event-text">${text}</div>`;
 
-━━━━━━━━━━━━━━━━━━━━━━━━━
-The frontier claimed another party.
-Your grave rests on the Oregon Trail.
-                `;
+                if (options) {
+                    html += '<div class="decision-buttons">';
+                    options.forEach((opt, i) => {
+                        html += `<button class="primary" onclick="game.eventCallbacks[${i}]()">${opt.text}</button>`;
+                    });
+                    html += '</div>';
+                    this.eventCallbacks = options.map(o => o.action);
+                } else {
+                    html += '<div class="decision-buttons"><button class="primary" onclick="game.continueJourney()">CONTINUE</button></div>';
+                }
+
+                eventPanel.innerHTML = html;
+                eventPanel.style.display = 'block';
+            }
+
+            presentEvent() {
+                if (this.gameData.stage >= this.locations.length) {
+                    this.endGame(true);
+                    return;
+                }
+
+                this.updateUI();
+
+                const eventNum = Math.random();
+                if (eventNum < 0.2) this.illnessEvent();
+                else if (eventNum < 0.35) this.riverCrossing();
+                else if (eventNum < 0.5) this.hunterSuccess();
+                else if (eventNum < 0.65) this.weatherEvent();
+                else this.continueJourney();
+            }
+
+            illnessEvent() {
+                const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
+                const illnesses = ['Cholera', 'Dysentery', 'Fever', 'Pneumonia'];
+                const illness = illnesses[Math.floor(Math.random() * illnesses.length)];
+                this.gameData.health -= 15;
+
+                this.showEvent(
+                    `🤒 ${person} is ill!`,
+                    `${person} has contracted ${illness}.\n\nThe party must rest and care for them.`,
+                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
+                );
+            }
+
+            hunterSuccess() {
+                const catch_amt = 150 + Math.floor(Math.random() * 200);
+                this.gameData.food += catch_amt;
+
+                this.showEvent(
+                    '🎯 Successful Hunt!',
+                    `Your party hunted ${catch_amt} lbs of game!\n\nMorale is high and bellies are full.`,
+                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
+                );
+            }
+
+            riverCrossing() {
+                this.showEvent(
+                    '⛈️ River Crossing',
+                    'A wide river blocks your path. The current is strong.',
+                    [
+                        {
+                            text: 'FORD IT (Risky)',
+                            action: () => {
+                                if (Math.random() < 0.6) {
+                                    this.showEvent('✅ Success!', 'You crossed safely!', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
+                                } else {
+                                    this.gameData.food -= 100;
+                                    this.showEvent('❌ Disaster!', 'The wagon overturned!\nYou lost supplies.', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
+                                }
+                            }
+                        },
+                        {
+                            text: 'FLOAT IT (Safe)',
+                            action: () => {
+                                this.gameData.food -= 30;
+                                this.showEvent('✅ Safe Crossing', 'You crossed carefully.', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
+                            }
+                        }
+                    ]
+                );
+            }
+
+            weatherEvent() {
+                this.gameData.health -= 10;
+                this.showEvent(
+                    '🌪️ Harsh Weather',
+                    'Strong winds and cold temperatures sweep across the plains.',
+                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
+                );
+            }
+
+            continueJourney() {
+                document.getElementById('eventPanel').style.display = 'none';
+                this.gameData.stage++;
+                this.gameData.distance = this.locations[this.gameData.stage].distance;
+                this.gameData.food -= 30;
+
+                if (this.gameData.food <= 0 || this.gameData.health <= 0) {
+                    this.endGame(false);
+                    return;
+                }
+
+                setTimeout(() => this.presentEvent(), 800);
+            }
+
+            endGame(success) {
+                this.goToScreen('endScreen');
+                const endContent = document.getElementById('endContent');
+
+                if (success) {
+                    endContent.innerHTML = `
+                        <h1 style="font-size: 3em; margin-bottom: 20px;">🎉 YOU REACHED OREGON! 🎉</h1>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
+                            <p style="font-size: 1.2em; margin-bottom: 15px;">Your party made it!</p>
+                            <p>Distance: ${this.gameData.distance} miles</p>
+                            <p>Final Food: ${Math.floor(this.gameData.food)} lbs</p>
+                            <p>Oxen: ${this.gameData.oxen}</p>
+                        </div>
+                        <button class="primary" onclick="location.reload()" style="margin-top: 30px;">PLAY AGAIN</button>
+                    `;
+                } else {
+                    endContent.innerHTML = `
+                        <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY HAS ENDED ⚰️</h1>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
+                            <p style="font-size: 1.2em; margin-bottom: 15px;">The frontier was too harsh...</p>
+                            <p>Distance: ${this.gameData.distance} miles</p>
+                            <p>Food: ${Math.floor(this.gameData.food)} lbs</p>
+                        </div>
+                        <button class="primary" onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
+                    `;
+                }
+            }
+
+            goToScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            startJourney() {
+                this.gameData.members = [
+                    document.getElementById('leader').value || 'Leader',
+                    document.getElementById('member2').value || 'Companion 1',
+                    document.getElementById('member3').value || 'Companion 2',
+                    document.getElementById('member4').value || 'Companion 3'
+                ];
+                this.gameData.stage = 0;
+                this.goToScreen('gameScreen');
+                setTimeout(() => this.presentEvent(), 500);
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.updateWagonPosition();
+                this.renderer.render(this.scene, this.camera);
             }
         }
 
-        // Initialize
-        updateStats();
+        const game = new OregonTrailGame();
     </script>
 </body>
 </html>
