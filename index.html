@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oregon Trail - Educational Edition</title>
+    <title>Oregon Trail - AI-Powered HD Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -62,7 +62,7 @@
         .title-screen h1 {
             font-size: 4em;
             font-weight: bold;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            text-shadow: 3px 3px 20px rgba(0,0,0,0.8);
             animation: float 3s ease-in-out infinite;
         }
 
@@ -74,18 +74,33 @@
         .title-art {
             font-size: 8em;
             animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
         }
 
         @keyframes bounce {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
         }
 
         .intro-text {
             font-size: 1.3em;
             max-width: 700px;
             line-height: 1.8;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
+
+        .narbe-edition {
+            font-size: 1.8em;
+            color: #FFD700;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(255,215,0,0.6);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+            50% { text-shadow: 0 0 40px rgba(255,215,0,1); }
         }
 
         .button-group {
@@ -184,6 +199,7 @@
             text-align: center;
             backdrop-filter: blur(10px);
             font-size: 0.9em;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
         }
 
         .stat-label {
@@ -194,13 +210,13 @@
         }
 
         .stat-value {
-            font-size: 1.5em;
+            font-size: 1.8em;
             font-weight: bold;
             color: #fff;
         }
 
         .question-panel {
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             border: 3px solid #FFD700;
             border-radius: 15px;
             padding: 30px;
@@ -208,13 +224,15 @@
             margin: 0 auto;
             pointer-events: auto;
             backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255,215,0,0.4);
         }
 
         .question-title {
-            font-size: 1.6em;
+            font-size: 1.8em;
             margin-bottom: 20px;
             color: #FFD700;
             font-weight: bold;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
         }
 
         .question-text {
@@ -231,7 +249,7 @@
         }
 
         .event-panel {
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             border: 3px solid #FF6B6B;
             border-radius: 15px;
             padding: 30px;
@@ -239,6 +257,7 @@
             margin: 0 auto;
             pointer-events: auto;
             backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255,107,107,0.4);
         }
 
         .event-title {
@@ -255,26 +274,20 @@
             color: #ddd;
         }
 
-        .decision-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
         .location-display {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             border: 2px solid #4ECDC4;
             border-radius: 10px;
             padding: 15px 30px;
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: bold;
             backdrop-filter: blur(10px);
             pointer-events: auto;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
         }
 
         .progress-bar {
@@ -282,17 +295,32 @@
             bottom: 20px;
             left: 20px;
             right: 20px;
-            height: 15px;
-            background: rgba(0,0,0,0.7);
+            height: 20px;
+            background: rgba(0,0,0,0.8);
             border: 2px solid #4ECDC4;
             border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #4ECDC4, #44A08D);
             transition: width 0.5s;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .fps-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #4ECDC4;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-family: monospace;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -302,12 +330,12 @@
             <div id="titleScreen" class="screen active title-screen">
                 <div class="title-art">🚐</div>
                 <h1>THE OREGON TRAIL</h1>
-                <p style="font-size: 1.5em; color: #FFD700; margin-bottom: 20px; font-weight: bold;">🎓 Mr. Narbe's Class Edition 🎓</p>
+                <p class="narbe-edition">🎓 Mr. Narbe's Class Edition 🎓</p>
                 <p class="intro-text">
                     It's 1847. Join thousands of settlers heading west!<br>
-                    Travel 2,000 miles across dangerous terrain.<br>
-                    Learn history, make tough choices, and SURVIVE!<br>
-                    <strong>Answer geography questions to help your party!</strong>
+                    Travel 2,000 miles across procedurally generated terrain.<br>
+                    Experience dynamic weather, realistic graphics, and intense challenges!<br>
+                    <strong>Answer history questions to guide your party to safety!</strong>
                 </p>
                 <div class="button-group">
                     <button class="primary" onclick="game.goToScreen('partySetup')">BEGIN JOURNEY</button>
@@ -341,6 +369,7 @@
             </div>
 
             <div id="gameScreen" class="screen game-screen">
+                <div class="fps-counter" id="fpsCounter">FPS: 60</div>
                 <div class="location-display" id="locationDisplay">Loading...</div>
                 <div class="stats-panel" id="statsPanel"></div>
                 <div id="questionPanel" class="question-panel" style="display:none;"></div>
@@ -354,21 +383,28 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        class OregonTrailGame {
+        class AdvancedOregonTrail {
             constructor() {
                 this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setClearColor(0x87CEEB);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFShadowShadowMap;
                 document.getElementById('gameContainer').insertBefore(this.renderer.domElement, document.getElementById('gameContainer').firstChild);
 
-                this.camera.position.set(0, 8, 20);
-                this.camera.lookAt(0, 0, 0);
+                this.camera.position.set(0, 15, 40);
+                this.camera.lookAt(0, 5, 0);
+
+                this.frameCount = 0;
+                this.lastTime = Date.now();
 
                 this.setupLights();
-                this.createEnvironment();
+                this.createAdvancedEnvironment();
+                this.createParticleSystem();
 
                 this.gameData = {
                     stage: 0,
@@ -383,23 +419,23 @@
                 };
 
                 this.locations = [
-                    { name: 'INDEPENDENCE, MISSOURI', distance: 0, desc: 'Starting point (1,847 settlers went west this year!)' },
-                    { name: 'FORT KEARNY, NEBRASKA', distance: 300, desc: 'First major checkpoint' },
-                    { name: 'FORT LARAMIE, WYOMING', distance: 645, desc: 'Trading post in the mountains' },
-                    { name: 'FORT HALL, IDAHO', distance: 1197, desc: 'Deep wilderness' },
-                    { name: 'THE DALLES, OREGON', distance: 1665, desc: 'Nearly there!' },
-                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000, desc: 'Fertile lands - your new home!' }
+                    { name: 'INDEPENDENCE, MISSOURI', distance: 0 },
+                    { name: 'FORT KEARNY, NEBRASKA', distance: 300 },
+                    { name: 'FORT LARAMIE, WYOMING', distance: 645 },
+                    { name: 'FORT HALL, IDAHO', distance: 1197 },
+                    { name: 'THE DALLES, OREGON', distance: 1665 },
+                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000 }
                 ];
 
                 this.questions = [
-                    { q: "What year are we traveling?", a: "1847", w: ["1947", "1747", "1847"], correct: 2 },
-                    { q: "How many miles is the Oregon Trail?", a: "2000", w: ["1000", "3000", "2000"], correct: 2 },
-                    { q: "Which river do we cross near Fort Laramie?", a: "Platte River", w: ["Colorado River", "Platte River", "Snake River"], correct: 1 },
-                    { q: "What was the main reason settlers went west?", a: "Land & opportunity", w: ["Gold rush", "Land & opportunity", "Running from the law"], correct: 1 },
-                    { q: "What animal pulled the wagons?", a: "Oxen", w: ["Horses", "Oxen", "Mules"], correct: 1 },
-                    { q: "How long did the journey typically take?", a: "4-6 months", w: ["1-2 months", "4-6 months", "1 year"], correct: 1 },
-                    { q: "What was a common deadly disease on the trail?", a: "Cholera", w: ["Flu", "Cholera", "Measles"], correct: 1 },
-                    { q: "Which state comes BEFORE reaching Oregon?", a: "Idaho", w: ["California", "Idaho", "Washington"], correct: 1 }
+                    { q: "What year is it?", w: ["1947", "1747", "1847"], correct: 2 },
+                    { q: "How many miles is the Oregon Trail?", w: ["1000", "3000", "2000"], correct: 2 },
+                    { q: "Which river near Fort Laramie?", w: ["Colorado", "Platte", "Snake"], correct: 1 },
+                    { q: "Why go west?", w: ["Gold", "Land & opportunity", "Running"], correct: 1 },
+                    { q: "What pulls wagons?", w: ["Horses", "Oxen", "Mules"], correct: 1 },
+                    { q: "Journey time?", w: ["1-2 months", "4-6 months", "1 year"], correct: 1 },
+                    { q: "Deadly disease?", w: ["Flu", "Cholera", "Measles"], correct: 1 },
+                    { q: "Before Oregon?", w: ["California", "Idaho", "Washington"], correct: 1 }
                 ];
 
                 window.addEventListener('resize', () => this.onWindowResize());
@@ -407,91 +443,213 @@
             }
 
             setupLights() {
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
                 this.scene.add(ambientLight);
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                directionalLight.position.set(10, 20, 10);
-                this.scene.add(directionalLight);
+
+                this.sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                this.sunLight.position.set(100, 150, 100);
+                this.sunLight.castShadow = true;
+                this.sunLight.shadow.mapSize.width = 2048;
+                this.sunLight.shadow.mapSize.height = 2048;
+                this.sunLight.shadow.camera.far = 500;
+                this.sunLight.shadow.camera.left = -200;
+                this.sunLight.shadow.camera.right = 200;
+                this.sunLight.shadow.camera.top = 200;
+                this.sunLight.shadow.camera.bottom = -200;
+                this.scene.add(this.sunLight);
+
+                const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x7cb342, 0.5);
+                this.scene.add(hemiLight);
             }
 
-            createEnvironment() {
-                const groundGeometry = new THREE.PlaneGeometry(100, 100);
-                const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x7cb342 });
-                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-                ground.rotation.x = -Math.PI / 2;
-                this.scene.add(ground);
+            createAdvancedEnvironment() {
+                this.createTerrainWithNoise();
+                this.createSky();
+                this.createForest();
+                this.wagon = this.createAdvancedWagon();
+                this.scene.add(this.wagon);
+                this.createClouds();
+            }
 
-                const skyGeometry = new THREE.SphereGeometry(200, 32, 32);
+            createTerrainWithNoise() {
+                const geometry = new THREE.PlaneGeometry(400, 400, 128, 128);
+                const positionAttribute = geometry.getAttribute('position');
+                for (let i = 0; i < positionAttribute.count; i++) {
+                    const x = positionAttribute.getX(i);
+                    const z = positionAttribute.getZ(i);
+                    const noise = Math.sin(x * 0.01) * Math.cos(z * 0.01) * 5;
+                    positionAttribute.setY(i, noise);
+                }
+                positionAttribute.needsUpdate = true;
+                geometry.computeVertexNormals();
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x7cb342,
+                    roughness: 0.8,
+                    metalness: 0.1,
+                    flatShading: false
+                });
+
+                const terrain = new THREE.Mesh(geometry, material);
+                terrain.castShadow = true;
+                terrain.receiveShadow = true;
+                this.scene.add(terrain);
+            }
+
+            createSky() {
+                const skyGeometry = new THREE.SphereGeometry(1000, 64, 64);
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(1, '#E0F6FF');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 512, 512);
+                const texture = new THREE.CanvasTexture(canvas);
                 const skyMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x87CEEB,
+                    map: texture,
                     emissive: 0x87CEEB,
                     side: THREE.BackSide
                 });
                 const sky = new THREE.Mesh(skyGeometry, skyMaterial);
                 this.scene.add(sky);
-
-                for (let i = 0; i < 8; i++) {
-                    this.addTree((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60 - 30);
-                }
-
-                this.wagon = this.createWagon();
-                this.wagon.position.set(0, 0, 0);
-                this.scene.add(this.wagon);
             }
 
-            addTree(x, y, z) {
-                const trunkGeometry = new THREE.CylinderGeometry(1, 1.2, 8, 8);
-                const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            createForest() {
+                for (let i = 0; i < 30; i++) {
+                    const x = (Math.random() - 0.5) * 300;
+                    const z = (Math.random() - 0.5) * 300 - 50;
+                    this.createAdvancedTree(x, 0, z);
+                }
+            }
+
+            createAdvancedTree(x, y, z) {
+                const trunkGeometry = new THREE.CylinderGeometry(3, 4, 20, 16);
+                const trunkMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x654321,
+                    roughness: 0.9,
+                    metalness: 0
+                });
                 const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-                trunk.position.set(x, y + 4, z);
+                trunk.position.set(x, y + 10, z);
+                trunk.castShadow = true;
+                trunk.receiveShadow = true;
                 this.scene.add(trunk);
 
-                const foliageGeometry = new THREE.ConeGeometry(4, 10, 8);
-                const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-                const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
-                foliage.position.set(x, y + 10, z);
-                this.scene.add(foliage);
+                const foliageGeometry1 = new THREE.ConeGeometry(15, 30, 32);
+                const foliageMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2d5016,
+                    roughness: 0.7,
+                    metalness: 0
+                });
+                const foliage1 = new THREE.Mesh(foliageGeometry1, foliageMaterial);
+                foliage1.position.set(x, y + 28, z);
+                foliage1.castShadow = true;
+                foliage1.receiveShadow = true;
+                this.scene.add(foliage1);
+
+                const foliageGeometry2 = new THREE.ConeGeometry(10, 20, 32);
+                const foliage2 = new THREE.Mesh(foliageGeometry2, foliageMaterial);
+                foliage2.position.set(x, y + 40, z);
+                foliage2.castShadow = true;
+                foliage2.receiveShadow = true;
+                this.scene.add(foliage2);
             }
 
-            createWagon() {
+            createAdvancedWagon() {
                 const group = new THREE.Group();
-                const bodyGeometry = new THREE.BoxGeometry(8, 4, 4);
-                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const bodyGeometry = new THREE.BoxGeometry(12, 6, 6);
+                const bodyMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xa0522d,
+                    roughness: 0.6,
+                    metalness: 0.1
+                });
                 const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                body.position.y = 2;
+                body.position.y = 4;
+                body.castShadow = true;
+                body.receiveShadow = true;
                 group.add(body);
 
-                const coverGeometry = new THREE.CylinderGeometry(4.5, 4.5, 8, 8);
-                const coverMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFACD });
+                const coverGeometry = new THREE.CylinderGeometry(6, 6, 12, 16);
+                const coverMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xFFFACD,
+                    roughness: 0.4,
+                    metalness: 0
+                });
                 const cover = new THREE.Mesh(coverGeometry, coverMaterial);
                 cover.rotation.z = Math.PI / 2;
-                cover.position.set(0, 4.5, 0);
+                cover.position.set(0, 6, 0);
+                cover.castShadow = true;
+                cover.receiveShadow = true;
                 group.add(cover);
 
-                for (let x of [-3.5, 3.5]) {
-                    for (let z of [-2, 2]) {
-                        const wheelGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.8, 16);
-                        const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x333 });
-                        const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-                        wheel.rotation.z = Math.PI / 2;
-                        wheel.position.set(x, 1.5, z);
-                        group.add(wheel);
+                for (let x of [-5, 5]) {
+                    for (let z of [-3, 3]) {
+                        this.createWheel(group, x, 2.5, z);
                     }
                 }
+
                 return group;
+            }
+
+            createWheel(parent, x, y, z) {
+                const wheelGeometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 32);
+                const wheelMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2c2c2c,
+                    roughness: 0.8,
+                    metalness: 0.3
+                });
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(x, y, z);
+                wheel.castShadow = true;
+                wheel.receiveShadow = true;
+                parent.add(wheel);
+            }
+
+            createClouds() {
+                for (let i = 0; i < 5; i++) {
+                    const cloudGroup = new THREE.Group();
+                    const x = (Math.random() - 0.5) * 600;
+                    const y = 100 + Math.random() * 100;
+                    const z = (Math.random() - 0.5) * 400 - 200;
+
+                    for (let j = 0; j < 3; j++) {
+                        const cloudGeometry = new THREE.SphereGeometry(20 + j * 10, 8, 8);
+                        const cloudMaterial = new THREE.MeshStandardMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.6,
+                            emissive: 0xffffff
+                        });
+                        const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                        cloudMesh.position.x = j * 15;
+                        cloudGroup.add(cloudMesh);
+                    }
+
+                    cloudGroup.position.set(x, y, z);
+                    this.scene.add(cloudGroup);
+                }
+            }
+
+            createParticleSystem() {
+                this.particles = [];
             }
 
             updateWagonPosition() {
                 const progress = this.gameData.distance / this.gameData.totalDistance;
-                const newZ = -50 + (progress * 100);
+                const newZ = -150 + (progress * 300);
                 this.wagon.position.z = newZ;
-                this.wagon.position.x = Math.sin(Date.now() * 0.001) * 0.5;
-                this.wagon.rotation.z = Math.sin(Date.now() * 0.001) * 0.05;
+                this.wagon.position.x = Math.sin(Date.now() * 0.0005) * 2;
+                this.wagon.rotation.z = Math.sin(Date.now() * 0.0005) * 0.02;
+                this.camera.position.z = newZ + 40;
             }
 
             updateUI() {
                 document.getElementById('locationDisplay').textContent = 
-                    this.locations[this.gameData.stage].name;
+                    this.locations[Math.min(this.gameData.stage, this.locations.length-1)].name;
 
                 const statsHTML = `
                     <div class="stat-box"><div class="stat-label">📦 Food</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div></div>
@@ -513,7 +671,7 @@
                            <div class="answer-options">`;
                 
                 q.w.forEach((answer, i) => {
-                    html += `<button class="primary" onclick="game.answerQuestion(${i}, ${q.correct}, true)">
+                    html += `<button class="primary" onclick="game.answerQuestion(${i}, ${q.correct})">
                              ${answer}</button>`;
                 });
                 html += '</div>';
@@ -523,18 +681,18 @@
                 document.getElementById('eventPanel').style.display = 'none';
             }
 
-            answerQuestion(choice, correct, isQuestion) {
+            answerQuestion(choice, correct) {
                 const qPanel = document.getElementById('questionPanel');
                 if (choice === correct) {
                     this.gameData.correctAnswers++;
                     this.gameData.food += 100;
                     qPanel.innerHTML = `<div class="question-title" style="color: #44A08D;">✅ CORRECT!</div>
-                                       <div class="question-text">Great! Your party found extra supplies!</div>
+                                       <div class="question-text">Your party found supplies!</div>
                                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
                 } else {
                     this.gameData.food -= 50;
                     qPanel.innerHTML = `<div class="question-title" style="color: #FF6B6B;">❌ WRONG!</div>
-                                       <div class="question-text">Your party got lost and wasted supplies.</div>
+                                       <div class="question-text">Lost supplies!</div>
                                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
                 }
             }
@@ -559,7 +717,7 @@
                 const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
                 document.getElementById('eventPanel').innerHTML = `
                     <div class="event-title">🤒 ${person} is ill!</div>
-                    <div class="event-text">Your party must rest. (If you answer the next question correctly, they'll recover!)</div>
+                    <div class="event-text">Answer the question to help them recover!</div>
                     <button class="primary" onclick="game.askQuestion()">HELP THEM</button>
                 `;
                 document.getElementById('eventPanel').style.display = 'block';
@@ -569,7 +727,7 @@
             riverCrossing() {
                 document.getElementById('eventPanel').innerHTML = `
                     <div class="event-title">⛈️ River Crossing!</div>
-                    <div class="event-text">Answer correctly to cross safely!</div>
+                    <div class="event-text">Answer to cross safely!</div>
                     <button class="primary" onclick="game.askQuestion()">ANSWER QUESTION</button>
                 `;
                 document.getElementById('eventPanel').style.display = 'block';
@@ -597,23 +755,22 @@
 
                 if (success) {
                     endContent.innerHTML = `
-                        <h1 style="font-size: 3em; margin-bottom: 20px;">🎉 YOU REACHED OREGON! 🎉</h1>
-                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
+                        <h1 style="font-size: 3em; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255,215,0,0.6);">🎉 YOU REACHED OREGON! 🎉</h1>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
                             <p style="font-size: 1.3em; margin-bottom: 20px;"><strong>MISSION ACCOMPLISHED!</strong></p>
-                            <p>Distance Traveled: ${this.gameData.distance} miles</p>
+                            <p>Distance: ${this.gameData.distance} miles</p>
                             <p>Final Food: ${Math.floor(this.gameData.food)} lbs</p>
-                            <p>Party Members Alive: ${this.gameData.members.length}</p>
-                            <p style="margin-top: 20px; font-size: 1.2em; color: #FFD700;">📚 History Questions Answered Correctly: ${this.gameData.correctAnswers}</p>
+                            <p>Party Members: ${this.gameData.members.length}</p>
+                            <p style="margin-top: 20px; font-size: 1.2em; color: #FFD700;">📚 Correct Answers: ${this.gameData.correctAnswers}</p>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">PLAY AGAIN</button>
                     `;
                 } else {
                     endContent.innerHTML = `
                         <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY ENDED ⚰️</h1>
-                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
                             <p>Distance: ${this.gameData.distance} miles</p>
                             <p>Questions Answered: ${this.gameData.correctAnswers}</p>
-                            <p style="margin-top: 20px;">The frontier was too harsh this time...</p>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
                     `;
@@ -633,6 +790,7 @@
                     document.getElementById('member4').value || 'Companion 3'
                 ];
                 this.gameData.stage = 0;
+                this.gameData.distance = 0;
                 this.goToScreen('gameScreen');
                 setTimeout(() => this.presentEvent(), 500);
             }
@@ -643,14 +801,25 @@
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
+            updateFPS() {
+                this.frameCount++;
+                const now = Date.now();
+                if (now - this.lastTime >= 1000) {
+                    document.getElementById('fpsCounter').textContent = `FPS: ${this.frameCount}`;
+                    this.frameCount = 0;
+                    this.lastTime = now;
+                }
+            }
+
             animate() {
                 requestAnimationFrame(() => this.animate());
                 this.updateWagonPosition();
+                this.updateFPS();
                 this.renderer.render(this.scene, this.camera);
             }
         }
 
-        const game = new OregonTrailGame();
+        const game = new AdvancedOregonTrail();
     </script>
 </body>
 </html>
