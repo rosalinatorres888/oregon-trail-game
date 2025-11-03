@@ -50,7 +50,7 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 20px;
             margin-bottom: 10px;
         }
@@ -76,19 +76,20 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
             border-radius: 8px;
             pointer-events: auto;
             z-index: 101;
             font-size: 14px;
+            border: 2px solid #FF6B6B;
         }
 
         .controls {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             padding: 15px;
             border-radius: 8px;
             pointer-events: auto;
@@ -97,21 +98,189 @@
             color: #aaa;
         }
 
-        .particle {
-            position: absolute;
-            pointer-events: none;
+        .event-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            z-index: 200;
+            pointer-events: auto;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .event-modal.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .event-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #FF8E53;
+            font-weight: bold;
+        }
+
+        .event-text {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            color: #ddd;
+        }
+
+        .event-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: 2px solid #4ECDC4;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            border-color: #FF8E53;
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(255, 139, 83, 0.5);
+        }
+
+        .overlay-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            display: none;
+        }
+
+        .overlay-bg.active {
+            display: block;
+        }
+
+        .title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 300;
+            pointer-events: auto;
+        }
+
+        .title-screen.hidden {
+            display: none;
+        }
+
+        .title-screen h1 {
+            font-size: 5em;
+            font-weight: bold;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.7);
+            animation: float 3s ease-in-out infinite;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-20px); }
         }
 
-        .dust-particle {
-            width: 2px;
-            height: 2px;
-            background: rgba(200, 150, 100, 0.5);
-            border-radius: 50%;
+        .title-screen p {
+            font-size: 1.3em;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.8;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .end-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 300;
+            pointer-events: auto;
+            display: none;
+        }
+
+        .end-screen.active {
+            display: flex;
+        }
+
+        .end-screen h1 {
+            font-size: 4em;
+            font-weight: bold;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.7);
+        }
+
+        .end-screen .summary {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #4ECDC4;
+            max-width: 600px;
+            text-align: left;
+            font-size: 1.1em;
+            line-height: 1.8;
         }
     </style>
 </head>
@@ -134,6 +303,10 @@
                     <div class="stat-value"><span id="food">500</span> lb</div>
                 </div>
                 <div class="stat">
+                    <div class="stat-label">Oxen</div>
+                    <div class="stat-value"><span id="oxen">4</span></div>
+                </div>
+                <div class="stat">
                     <div class="stat-label">Date</div>
                     <div class="stat-value"><span id="date">Mar 1847</span></div>
                 </div>
@@ -141,42 +314,63 @@
         </div>
 
         <div class="controls">
-            Space: Travel | R: Rest | H: Hunt | T: Trade
+            Space: Continue | R: Rest | H: Hunt | S: Store
         </div>
 
         <div class="weather-indicator">
             <div id="weather">🌤️ Clear Skies</div>
-            <div id="season">Spring</div>
+            <div id="season" style="margin-top: 5px;">Spring</div>
         </div>
+    </div>
+
+    <div class="overlay-bg" id="overlayBg"></div>
+
+    <div class="event-modal" id="eventModal">
+        <div class="event-title" id="eventTitle"></div>
+        <div class="event-text" id="eventText"></div>
+        <div class="event-choices" id="eventChoices"></div>
+    </div>
+
+    <div class="title-screen" id="titleScreen">
+        <h1>🚐 THE OREGON TRAIL 🚐</h1>
+        <p>Journey across 2,000 miles of untamed wilderness. Manage resources, survive hardships, and lead your party to Oregon!</p>
+        <button class="start-btn" onclick="game.startGame()">BEGIN JOURNEY</button>
+    </div>
+
+    <div class="end-screen" id="endScreen">
+        <h1 id="endTitle"></h1>
+        <div class="summary" id="endSummary"></div>
+        <button class="start-btn" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Canvas sizing
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Game State
-        const game = {
+        const gameState = {
             distance: 0,
             health: 100,
             food: 500,
-            date: { month: 3, year: 1847 },
+            oxen: 4,
             money: 1500,
             wagonX: canvas.width / 2,
             wagonY: canvas.height * 0.65,
             speed: 0,
             maxSpeed: 3,
             isMoving: false,
-            weather: 'clear', // clear, rain, snow, dust
+            weather: 'clear',
             temperature: 65,
             particles: [],
-            characters: []
+            characters: [],
+            date: { month: 3, year: 1847 },
+            daysOnTrail: 0,
+            gameActive: false,
+            inEvent: false
         };
 
-        // Particle System
         class Particle {
             constructor(x, y, type) {
                 this.x = x;
@@ -225,7 +419,6 @@
             }
         }
 
-        // Character class
         class Character {
             constructor(offset) {
                 this.offset = offset;
@@ -242,23 +435,18 @@
                 const x = wagonX + this.offset - 40;
                 const y = wagonY - 60 + this.bobbing;
 
-                // Simple character (stick figure style)
                 ctx.fillStyle = '#8B4513';
                 
-                // Head
                 ctx.beginPath();
                 ctx.arc(x, y - 20, 6, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Body
                 ctx.fillRect(x - 3, y - 13, 6, 15);
 
-                // Legs (walking animation)
                 const legOffset = Math.sin(this.walkCycle) * 3;
                 ctx.fillRect(x - 3, y + 2, 2, 8 + legOffset);
                 ctx.fillRect(x + 1, y + 2, 2, 8 - legOffset);
 
-                // Arms (swinging)
                 ctx.strokeStyle = '#8B4513';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -272,23 +460,20 @@
             }
         }
 
-        // Initialize characters
         for (let i = 0; i < 3; i++) {
-            game.characters.push(new Character(-60 - i * 30));
+            gameState.characters.push(new Character(-60 - i * 30));
         }
 
-        // Terrain generation
         function drawTerrain(offset) {
-            // Sky gradient
             const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
             
-            if (game.weather === 'clear') {
+            if (gameState.weather === 'clear') {
                 skyGradient.addColorStop(0, '#87CEEB');
                 skyGradient.addColorStop(1, '#E0F6FF');
-            } else if (game.weather === 'rain') {
+            } else if (gameState.weather === 'rain') {
                 skyGradient.addColorStop(0, '#4a5568');
                 skyGradient.addColorStop(1, '#667eea');
-            } else if (game.weather === 'dust') {
+            } else if (gameState.weather === 'dust') {
                 skyGradient.addColorStop(0, '#CD853F');
                 skyGradient.addColorStop(1, '#DEB887');
             }
@@ -296,11 +481,10 @@
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Sun position (moving through sky based on time)
-            const sunY = canvas.height * 0.2 + Math.sin((game.date.month - 1) / 12 * Math.PI) * 50;
+            const sunY = canvas.height * 0.2 + Math.sin((gameState.date.month - 1) / 12 * Math.PI) * 50;
             const sunX = canvas.width * 0.8;
 
-            if (game.weather === 'clear') {
+            if (gameState.weather === 'clear') {
                 const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 40);
                 sunGradient.addColorStop(0, 'rgba(255, 200, 0, 0.9)');
                 sunGradient.addColorStop(1, 'rgba(255, 200, 0, 0)');
@@ -310,7 +494,6 @@
                 ctx.fill();
             }
 
-            // Terrain with waves
             ctx.fillStyle = '#90EE90';
             ctx.beginPath();
             ctx.moveTo(0, canvas.height * 0.65);
@@ -326,11 +509,7 @@
             ctx.closePath();
             ctx.fill();
 
-            // Trees
             drawTrees(offset);
-
-            // Water bodies with reflection
-            drawWaterBodies(offset);
         }
 
         function drawTrees(offset) {
@@ -340,7 +519,6 @@
                 let x = ((basePos - offset) % (canvas.width + 200)) - 100;
                 if (x < -100) x += canvas.width + 200;
 
-                // Tree foliage (sphere)
                 const gradient = ctx.createRadialGradient(x, 300, 0, x, 300, 35);
                 gradient.addColorStop(0, '#228B22');
                 gradient.addColorStop(0.7, '#1a6b1a');
@@ -351,49 +529,23 @@
                 ctx.arc(x, 300, 35, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Trunk
                 ctx.fillStyle = '#8B4513';
                 ctx.fillRect(x - 5, 330, 10, 40);
             }
         }
 
-        function drawWaterBodies(offset) {
-            ctx.fillStyle = 'rgba(100, 150, 255, 0.6)';
-            ctx.beginPath();
-            ctx.moveTo(400 - offset, 500);
-            ctx.lineTo(600 - offset, 480);
-            ctx.lineTo(700 - offset, 520);
-            ctx.closePath();
-            ctx.fill();
-
-            // Reflection
-            ctx.globalAlpha = 0.3;
-            ctx.fillStyle = 'rgba(100, 150, 255, 0.4)';
-            ctx.beginPath();
-            ctx.moveTo(400 - offset, 520);
-            ctx.lineTo(600 - offset, 540);
-            ctx.lineTo(700 - offset, 500);
-            ctx.closePath();
-            ctx.fill();
-            ctx.globalAlpha = 1;
-        }
-
-        // Draw wagon
         function drawWagon() {
-            const x = game.wagonX;
-            const y = game.wagonY;
-            const bob = Math.sin(game.distance * 0.01) * 2;
+            const x = gameState.wagonX;
+            const y = gameState.wagonY;
+            const bob = Math.sin(gameState.distance * 0.01) * 2;
 
-            // Wagon body
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(x - 50, y + bob, 100, 40);
 
-            // Wagon detail
             ctx.strokeStyle = '#654321';
             ctx.lineWidth = 2;
             ctx.strokeRect(x - 50, y + bob, 100, 40);
 
-            // Wheels
             ctx.fillStyle = '#333';
             ctx.beginPath();
             ctx.arc(x - 30, y + 45 + bob, 12, 0, Math.PI * 2);
@@ -402,7 +554,6 @@
             ctx.arc(x + 30, y + 45 + bob, 12, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wheel rims
             ctx.strokeStyle = '#FFD700';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -412,7 +563,6 @@
             ctx.arc(x + 30, y + 45 + bob, 12, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Canvas cover
             ctx.strokeStyle = '#F5DEB3';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -420,147 +570,338 @@
             ctx.quadraticCurveTo(x, y - 20 + bob, x + 45, y + bob);
             ctx.stroke();
 
-            // Dust trail behind wagon
-            if (game.isMoving) {
+            if (gameState.isMoving) {
                 for (let i = 0; i < 3; i++) {
-                    game.particles.push(new Particle(x - 50 - Math.random() * 20, y + 40 + Math.random() * 20, 'dust'));
+                    gameState.particles.push(new Particle(x - 50 - Math.random() * 20, y + 40 + Math.random() * 20, 'dust'));
                 }
             }
         }
 
-        // Update weather
-        function updateWeather() {
-            const random = Math.random();
-            if (random > 0.95) {
-                const weatherTypes = ['clear', 'rain', 'dust', 'snow'];
-                game.weather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-            }
-
-            // Temperature based on season
-            const season = game.date.month % 12;
-            if (season === 12 || season <= 2) game.temperature = 35;
-            else if (season <= 5) game.temperature = 55;
-            else if (season <= 8) game.temperature = 80;
-            else game.temperature = 65;
-        }
-
-        // Update particles
         function updateParticles(dt) {
-            game.particles = game.particles.filter(p => {
+            gameState.particles = gameState.particles.filter(p => {
                 p.update(dt);
                 return p.life > 0;
             });
 
-            // Generate new particles based on weather
-            if (game.weather === 'rain') {
+            if (gameState.weather === 'rain') {
                 for (let i = 0; i < 5; i++) {
-                    game.particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height * 0.5, 'rain'));
+                    gameState.particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height * 0.5, 'rain'));
                 }
-            } else if (game.weather === 'dust' && game.isMoving) {
+            } else if (gameState.weather === 'dust' && gameState.isMoving) {
                 for (let i = 0; i < 8; i++) {
-                    game.particles.push(new Particle(canvas.width * 0.8, canvas.height * 0.4 + Math.random() * 100, 'dust'));
+                    gameState.particles.push(new Particle(canvas.width * 0.8, canvas.height * 0.4 + Math.random() * 100, 'dust'));
                 }
             }
         }
 
-        // Game loop
+        // GAME EVENTS
+        const events = [
+            {
+                name: 'illness',
+                trigger: () => Math.random() < 0.15 && gameState.health > 0,
+                execute: () => {
+                    const illnesses = ['Cholera', 'Dysentery', 'Typhoid', 'Fever'];
+                    const illness = illnesses[Math.floor(Math.random() * illnesses.length)];
+                    game.showEvent(
+                        `🤒 ${illness}!`,
+                        `A party member has contracted ${illness}. What do you do?`,
+                        [
+                            { text: 'Rest for recovery (+15 health, -50 food)', action: () => {
+                                gameState.health = Math.min(100, gameState.health + 15);
+                                gameState.food -= 50;
+                                gameState.isMoving = false;
+                                game.continueJourney();
+                            }},
+                            { text: 'Keep moving (risky)', action: () => {
+                                if (Math.random() < 0.5) {
+                                    game.showEvent('💀 Death', 'The party member did not survive...', [
+                                        { text: 'Continue', action: () => {
+                                            gameState.health -= 30;
+                                            game.continueJourney();
+                                        }}
+                                    ]);
+                                } else {
+                                    gameState.health -= 15;
+                                    game.continueJourney();
+                                }
+                            }}
+                        ]
+                    );
+                }
+            },
+            {
+                name: 'hunt',
+                trigger: () => Math.random() < 0.2,
+                execute: () => {
+                    game.showEvent(
+                        '🎯 Hunting Opportunity',
+                        'Your scouts spot buffalo! Hunt them?',
+                        [
+                            { text: 'Hunt (+150 food)', action: () => {
+                                gameState.food += 150;
+                                game.continueJourney();
+                            }},
+                            { text: 'Skip (save time)', action: () => {
+                                game.continueJourney();
+                            }}
+                        ]
+                    );
+                }
+            },
+            {
+                name: 'river',
+                trigger: () => Math.random() < 0.18,
+                execute: () => {
+                    game.showEvent(
+                        '⛈️ River Crossing',
+                        'A wide river blocks your path. The current is dangerous.',
+                        [
+                            { text: 'Ford it (-50 food, risky)', action: () => {
+                                if (Math.random() < 0.6) {
+                                    gameState.food -= 50;
+                                    game.continueJourney();
+                                } else {
+                                    gameState.food -= 150;
+                                    gameState.oxen -= 1;
+                                    game.showEvent('💀 Disaster!', 'The wagon overturned! Lost supplies and an ox.', [
+                                        { text: 'Continue', action: () => game.continueJourney() }
+                                    ]);
+                                }
+                            }},
+                            { text: 'Float it (safe, +2 days)', action: () => {
+                                gameState.daysOnTrail += 2;
+                                game.continueJourney();
+                            }}
+                        ]
+                    );
+                }
+            },
+            {
+                name: 'bandits',
+                trigger: () => Math.random() < 0.12,
+                execute: () => {
+                    game.showEvent(
+                        '🏴‍☠️ Bandits!',
+                        'A group of rough travelers approaches your camp.',
+                        [
+                            { text: 'Fight them (risky)', action: () => {
+                                if (Math.random() < 0.5) {
+                                    gameState.money -= 300;
+                                    game.showEvent('💰 Robbed!', 'They took your money but you survived.', [
+                                        { text: 'Continue', action: () => game.continueJourney() }
+                                    ]);
+                                } else {
+                                    game.showEvent('✅ Victory!', 'Your party fought them off!', [
+                                        { text: 'Continue', action: () => game.continueJourney() }
+                                    ]);
+                                }
+                            }},
+                            { text: 'Trade with them (-$100, +100 food)', action: () => {
+                                gameState.money -= 100;
+                                gameState.food += 100;
+                                game.continueJourney();
+                            }}
+                        ]
+                    );
+                }
+            },
+            {
+                name: 'oxen_death',
+                trigger: () => Math.random() < 0.15 && gameState.oxen > 1,
+                execute: () => {
+                    game.showEvent(
+                        '🐴 Oxen Died',
+                        'One of your oxen has died from exhaustion.',
+                        [
+                            { text: 'Continue', action: () => {
+                                gameState.oxen -= 1;
+                                game.continueJourney();
+                            }}
+                        ]
+                    );
+                }
+            },
+            {
+                name: 'weather',
+                trigger: () => Math.random() < 0.1,
+                execute: () => {
+                    const weatherTypes = ['dust', 'rain', 'snow'];
+                    gameState.weather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+                    game.continueJourney();
+                }
+            }
+        ];
+
+        const game = {
+            startGame() {
+                document.getElementById('titleScreen').classList.add('hidden');
+                gameState.gameActive = true;
+                gameState.isMoving = true;
+                game.triggerRandomEvent();
+            },
+
+            showEvent(title, text, choices) {
+                gameState.inEvent = true;
+                gameState.isMoving = false;
+                
+                document.getElementById('eventTitle').textContent = title;
+                document.getElementById('eventText').textContent = text;
+                
+                const choicesDiv = document.getElementById('eventChoices');
+                choicesDiv.innerHTML = '';
+                
+                choices.forEach(choice => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice.text;
+                    btn.onclick = choice.action;
+                    choicesDiv.appendChild(btn);
+                });
+                
+                document.getElementById('eventModal').classList.add('active');
+                document.getElementById('overlayBg').classList.add('active');
+            },
+
+            closeEvent() {
+                document.getElementById('eventModal').classList.remove('active');
+                document.getElementById('overlayBg').classList.remove('active');
+                gameState.inEvent = false;
+            },
+
+            triggerRandomEvent() {
+                for (let event of events) {
+                    if (event.trigger()) {
+                        event.execute();
+                        return;
+                    }
+                }
+                game.continueJourney();
+            },
+
+            continueJourney() {
+                game.closeEvent();
+                
+                if (gameState.distance >= 2000) {
+                    game.endGame(true);
+                    return;
+                }
+                
+                if (gameState.health <= 0 || gameState.food <= 0 || gameState.oxen <= 0) {
+                    game.endGame(false);
+                    return;
+                }
+                
+                gameState.isMoving = true;
+                setTimeout(() => game.triggerRandomEvent(), 3000);
+            },
+
+            endGame(success) {
+                gameState.gameActive = false;
+                gameState.isMoving = false;
+                
+                const endScreen = document.getElementById('endScreen');
+                const endTitle = document.getElementById('endTitle');
+                const endSummary = document.getElementById('endSummary');
+                
+                if (success) {
+                    endTitle.textContent = '🎉 YOU REACHED OREGON! 🎉';
+                    endSummary.innerHTML = `
+                        <strong>SUCCESS!</strong><br><br>
+                        Distance: ${Math.floor(gameState.distance)} miles<br>
+                        Health: ${Math.floor(gameState.health)}%<br>
+                        Food: ${Math.floor(gameState.food)} lbs<br>
+                        Oxen: ${gameState.oxen}<br>
+                        Days: ${gameState.daysOnTrail}<br><br>
+                        Your party made it to the promised land!
+                    `;
+                } else {
+                    endTitle.textContent = '💀 YOUR JOURNEY ENDED 💀';
+                    endSummary.innerHTML = `
+                        <strong>GAME OVER</strong><br><br>
+                        Distance: ${Math.floor(gameState.distance)} miles<br>
+                        Health: ${Math.floor(gameState.health)}%<br>
+                        Food: ${Math.floor(gameState.food)} lbs<br>
+                        Oxen: ${gameState.oxen}<br><br>
+                        The frontier proved too harsh for your party.
+                    `;
+                }
+                
+                endScreen.classList.add('active');
+            }
+        };
+
         let lastTime = Date.now();
         function gameLoop() {
             const now = Date.now();
             const dt = (now - lastTime) / 1000;
             lastTime = now;
 
-            // Clear and draw
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw terrain
-            drawTerrain(game.distance);
+            drawTerrain(gameState.distance);
 
-            // Update and draw characters
-            for (let char of game.characters) {
+            for (let char of gameState.characters) {
                 char.update(dt);
-                char.draw(game.wagonX, game.wagonY);
+                char.draw(gameState.wagonX, gameState.wagonY);
             }
 
-            // Draw wagon
             drawWagon();
 
-            // Update and draw particles
             updateParticles(dt);
-            for (let particle of game.particles) {
+            for (let particle of gameState.particles) {
                 particle.draw();
             }
 
-            // Update weather occasionally
-            if (Math.random() > 0.99) {
-                updateWeather();
+            if (gameState.gameActive && !gameState.inEvent) {
+                if (gameState.isMoving && gameState.speed < gameState.maxSpeed) {
+                    gameState.speed += 0.5;
+                } else if (!gameState.isMoving && gameState.speed > 0) {
+                    gameState.speed *= 0.95;
+                }
+
+                if (gameState.speed > 0.1) {
+                    gameState.distance += gameState.speed;
+                }
+
+                if (gameState.isMoving) {
+                    gameState.health -= dt * 0.5;
+                    gameState.food -= dt * 0.3;
+                }
             }
 
-            // Handle continuous movement
-            if (game.isMoving && game.speed < game.maxSpeed) {
-                game.speed += 0.5;
-            } else if (!game.isMoving && game.speed > 0) {
-                game.speed *= 0.95;
-            }
-
-            if (game.speed > 0.1) {
-                game.distance += game.speed;
-            }
-
-            // Update UI
-            document.getElementById('distance').textContent = Math.floor(game.distance);
-            document.getElementById('health').textContent = Math.max(0, Math.floor(game.health));
-            document.getElementById('food').textContent = Math.max(0, Math.floor(game.food));
+            document.getElementById('distance').textContent = Math.floor(gameState.distance);
+            document.getElementById('health').textContent = Math.max(0, Math.floor(gameState.health));
+            document.getElementById('food').textContent = Math.max(0, Math.floor(gameState.food));
+            document.getElementById('oxen').textContent = gameState.oxen;
 
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = ((game.date.month - 1 + Math.floor(game.distance / 500)) % 12) + 1;
-            document.getElementById('date').textContent = monthNames[month - 1] + ' ' + game.date.year;
+            const month = ((gameState.date.month - 1 + Math.floor(gameState.distance / 500)) % 12) + 1;
+            document.getElementById('date').textContent = monthNames[month - 1] + ' ' + gameState.date.year;
 
-            // Weather display
             const weatherEmoji = { clear: '🌤️ Clear Skies', rain: '🌧️ Heavy Rain', dust: '🌪️ Dust Storm', snow: '❄️ Heavy Snow' };
-            document.getElementById('weather').textContent = weatherEmoji[game.weather];
-
-            const seasonName = ['Winter', 'Spring', 'Spring', 'Summer', 'Summer', 'Summer', 'Fall', 'Fall', 'Fall', 'Winter', 'Winter', 'Winter'];
-            document.getElementById('season').textContent = seasonName[month - 1];
-
-            // Health depletion over time
-            if (game.isMoving) {
-                game.health -= dt * 2;
-                game.food -= dt * 1;
-            }
+            document.getElementById('weather').textContent = weatherEmoji[gameState.weather] || '🌤️ Clear Skies';
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Input handling
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                game.isMoving = true;
-            }
-            if (e.code === 'KeyR') {
-                game.health = Math.min(100, game.health + 25);
-                game.isMoving = false;
-            }
-            if (e.code === 'KeyH') {
-                game.food += 100;
-                game.isMoving = false;
+            if (e.code === 'Space' && gameState.gameActive && !gameState.inEvent) {
+                gameState.isMoving = true;
             }
         });
 
         document.addEventListener('keyup', (e) => {
             if (e.code === 'Space') {
-                game.isMoving = false;
-                game.speed = 0;
+                gameState.isMoving = false;
+                gameState.speed = 0;
             }
         });
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
 
-        // Start game loop
         gameLoop();
     </script>
 </body>
