@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oregon Trail - 3D HD Edition</title>
+    <title>Oregon Trail - Educational Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -23,10 +23,6 @@
             width: 100vw;
             height: 100vh;
             position: relative;
-        }
-
-        #canvas {
-            display: block;
         }
 
         .ui-overlay {
@@ -174,8 +170,8 @@
 
         .stats-panel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
             width: 100%;
             pointer-events: auto;
         }
@@ -184,30 +180,62 @@
             background: rgba(0,0,0,0.7);
             border: 2px solid #4ECDC4;
             border-radius: 10px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
             backdrop-filter: blur(10px);
+            font-size: 0.9em;
         }
 
         .stat-label {
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #4ECDC4;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-transform: uppercase;
         }
 
         .stat-value {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #fff;
         }
 
-        .event-panel {
-            background: rgba(0,0,0,0.8);
-            border: 2px solid #FF6B6B;
+        .question-panel {
+            background: rgba(0,0,0,0.85);
+            border: 3px solid #FFD700;
             border-radius: 15px;
-            padding: 25px;
-            max-width: 700px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-title {
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #ddd;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .event-panel {
+            background: rgba(0,0,0,0.85);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
             margin: 0 auto;
             pointer-events: auto;
             backdrop-filter: blur(10px);
@@ -243,7 +271,7 @@
             border: 2px solid #4ECDC4;
             border-radius: 10px;
             padding: 15px 30px;
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: bold;
             backdrop-filter: blur(10px);
             pointer-events: auto;
@@ -275,9 +303,10 @@
                 <div class="title-art">🚐</div>
                 <h1>THE OREGON TRAIL</h1>
                 <p class="intro-text">
-                    Journey across 2,000 miles of untamed wilderness.<br>
-                    Face illness, starvation, and impossible choices.<br>
-                    <strong>Can your party survive?</strong>
+                    It's 1847. Join thousands of settlers heading west!<br>
+                    Travel 2,000 miles across dangerous terrain.<br>
+                    Learn history, make tough choices, and SURVIVE!<br>
+                    <strong>Answer geography questions to help your party!</strong>
                 </p>
                 <div class="button-group">
                     <button class="primary" onclick="game.goToScreen('partySetup')">BEGIN JOURNEY</button>
@@ -289,19 +318,19 @@
                 <div class="party-grid">
                     <div class="member-input">
                         <label>👤 LEADER</label>
-                        <input type="text" id="leader" placeholder="Your name" value="Narbe's Students">
+                        <input type="text" id="leader" placeholder="Your name">
                     </div>
                     <div class="member-input">
                         <label>👥 COMPANION 1</label>
-                        <input type="text" id="member2" placeholder="Name" value="Teacher's Pet">
+                        <input type="text" id="member2" placeholder="Name">
                     </div>
                     <div class="member-input">
                         <label>👥 COMPANION 2</label>
-                        <input type="text" id="member3" placeholder="Name" value="Class Clown">
+                        <input type="text" id="member3" placeholder="Name">
                     </div>
                     <div class="member-input">
                         <label>👥 COMPANION 3</label>
-                        <input type="text" id="member4" placeholder="Name" value="Brave Soul">
+                        <input type="text" id="member4" placeholder="Name">
                     </div>
                 </div>
                 <div class="button-group">
@@ -313,7 +342,8 @@
             <div id="gameScreen" class="screen game-screen">
                 <div class="location-display" id="locationDisplay">Loading...</div>
                 <div class="stats-panel" id="statsPanel"></div>
-                <div class="event-panel" id="eventPanel" style="display:none;"></div>
+                <div id="questionPanel" class="question-panel" style="display:none;"></div>
+                <div id="eventPanel" class="event-panel" style="display:none;"></div>
                 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             </div>
 
@@ -347,16 +377,28 @@
                     health: 100,
                     distance: 0,
                     members: [],
-                    totalDistance: 2000
+                    totalDistance: 2000,
+                    correctAnswers: 0
                 };
 
                 this.locations = [
-                    { name: 'INDEPENDENCE, MISSOURI', distance: 0 },
-                    { name: 'FORT KEARNY, NEBRASKA', distance: 300 },
-                    { name: 'FORT LARAMIE, WYOMING', distance: 645 },
-                    { name: 'FORT HALL, IDAHO', distance: 1197 },
-                    { name: 'THE DALLES, OREGON', distance: 1665 },
-                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000 }
+                    { name: 'INDEPENDENCE, MISSOURI', distance: 0, desc: 'Starting point (1,847 settlers went west this year!)' },
+                    { name: 'FORT KEARNY, NEBRASKA', distance: 300, desc: 'First major checkpoint' },
+                    { name: 'FORT LARAMIE, WYOMING', distance: 645, desc: 'Trading post in the mountains' },
+                    { name: 'FORT HALL, IDAHO', distance: 1197, desc: 'Deep wilderness' },
+                    { name: 'THE DALLES, OREGON', distance: 1665, desc: 'Nearly there!' },
+                    { name: 'WILLAMETTE VALLEY, OREGON', distance: 2000, desc: 'Fertile lands - your new home!' }
+                ];
+
+                this.questions = [
+                    { q: "What year are we traveling?", a: "1847", w: ["1947", "1747", "1847"], correct: 2 },
+                    { q: "How many miles is the Oregon Trail?", a: "2000", w: ["1000", "3000", "2000"], correct: 2 },
+                    { q: "Which river do we cross near Fort Laramie?", a: "Platte River", w: ["Colorado River", "Platte River", "Snake River"], correct: 1 },
+                    { q: "What was the main reason settlers went west?", a: "Land & opportunity", w: ["Gold rush", "Land & opportunity", "Running from the law"], correct: 1 },
+                    { q: "What animal pulled the wagons?", a: "Oxen", w: ["Horses", "Oxen", "Mules"], correct: 1 },
+                    { q: "How long did the journey typically take?", a: "4-6 months", w: ["1-2 months", "4-6 months", "1 year"], correct: 1 },
+                    { q: "What was a common deadly disease on the trail?", a: "Cholera", w: ["Flu", "Cholera", "Measles"], correct: 1 },
+                    { q: "Which state comes BEFORE reaching Oregon?", a: "Idaho", w: ["California", "Idaho", "Washington"], correct: 1 }
                 ];
 
                 window.addEventListener('resize', () => this.onWindowResize());
@@ -366,21 +408,18 @@
             setupLights() {
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
                 this.scene.add(ambientLight);
-
                 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
                 directionalLight.position.set(10, 20, 10);
                 this.scene.add(directionalLight);
             }
 
             createEnvironment() {
-                // Ground
                 const groundGeometry = new THREE.PlaneGeometry(100, 100);
                 const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x7cb342 });
                 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
                 ground.rotation.x = -Math.PI / 2;
                 this.scene.add(ground);
 
-                // Sky
                 const skyGeometry = new THREE.SphereGeometry(200, 32, 32);
                 const skyMaterial = new THREE.MeshStandardMaterial({
                     color: 0x87CEEB,
@@ -390,34 +429,22 @@
                 const sky = new THREE.Mesh(skyGeometry, skyMaterial);
                 this.scene.add(sky);
 
-                this.addScenery();
-            }
-
-            addScenery() {
-                // Trees
                 for (let i = 0; i < 8; i++) {
-                    this.addTree(
-                        (Math.random() - 0.5) * 60,
-                        0,
-                        (Math.random() - 0.5) * 60 - 30
-                    );
+                    this.addTree((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60 - 30);
                 }
 
-                // Wagon
                 this.wagon = this.createWagon();
                 this.wagon.position.set(0, 0, 0);
                 this.scene.add(this.wagon);
             }
 
             addTree(x, y, z) {
-                // Trunk
                 const trunkGeometry = new THREE.CylinderGeometry(1, 1.2, 8, 8);
                 const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
                 const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
                 trunk.position.set(x, y + 4, z);
                 this.scene.add(trunk);
 
-                // Foliage
                 const foliageGeometry = new THREE.ConeGeometry(4, 10, 8);
                 const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
                 const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
@@ -427,15 +454,12 @@
 
             createWagon() {
                 const group = new THREE.Group();
-
-                // Body
                 const bodyGeometry = new THREE.BoxGeometry(8, 4, 4);
                 const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
                 const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
                 body.position.y = 2;
                 group.add(body);
 
-                // Cover
                 const coverGeometry = new THREE.CylinderGeometry(4.5, 4.5, 8, 8);
                 const coverMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFACD });
                 const cover = new THREE.Mesh(coverGeometry, coverMaterial);
@@ -443,7 +467,6 @@
                 cover.position.set(0, 4.5, 0);
                 group.add(cover);
 
-                // Wheels
                 for (let x of [-3.5, 3.5]) {
                     for (let z of [-2, 2]) {
                         const wheelGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.8, 16);
@@ -454,7 +477,6 @@
                         group.add(wheel);
                     }
                 }
-
                 return group;
             }
 
@@ -462,8 +484,6 @@
                 const progress = this.gameData.distance / this.gameData.totalDistance;
                 const newZ = -50 + (progress * 100);
                 this.wagon.position.z = newZ;
-
-                // Animate slight sway
                 this.wagon.position.x = Math.sin(Date.now() * 0.001) * 0.5;
                 this.wagon.rotation.z = Math.sin(Date.now() * 0.001) * 0.05;
             }
@@ -473,22 +493,11 @@
                     this.locations[this.gameData.stage].name;
 
                 const statsHTML = `
-                    <div class="stat-box">
-                        <div class="stat-label">📦 Food</div>
-                        <div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">🐴 Oxen</div>
-                        <div class="stat-value">${this.gameData.oxen}</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">💰 Money</div>
-                        <div class="stat-value">$${Math.floor(this.gameData.money)}</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">❤️ Health</div>
-                        <div class="stat-value">${Math.max(0, Math.floor(this.gameData.health))}%</div>
-                    </div>
+                    <div class="stat-box"><div class="stat-label">📦 Food</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div></div>
+                    <div class="stat-box"><div class="stat-label">🐴 Oxen</div><div class="stat-value">${this.gameData.oxen}</div></div>
+                    <div class="stat-box"><div class="stat-label">💰 Money</div><div class="stat-value">$${Math.floor(this.gameData.money)}</div></div>
+                    <div class="stat-box"><div class="stat-label">❤️ Health</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.health))}%</div></div>
+                    <div class="stat-box"><div class="stat-label">🧠 Correct</div><div class="stat-value">${this.gameData.correctAnswers}</div></div>
                 `;
                 document.getElementById('statsPanel').innerHTML = statsHTML;
 
@@ -496,23 +505,37 @@
                 document.getElementById('progressFill').style.width = progress + '%';
             }
 
-            showEvent(title, text, options = null) {
-                const eventPanel = document.getElementById('eventPanel');
-                let html = `<div class="event-title">${title}</div><div class="event-text">${text}</div>`;
+            askQuestion() {
+                const q = this.questions[Math.floor(Math.random() * this.questions.length)];
+                let html = `<div class="question-title">📚 HISTORY CHALLENGE!</div>
+                           <div class="question-text">${q.q}</div>
+                           <div class="answer-options">`;
+                
+                q.w.forEach((answer, i) => {
+                    html += `<button class="primary" onclick="game.answerQuestion(${i}, ${q.correct}, true)">
+                             ${answer}</button>`;
+                });
+                html += '</div>';
 
-                if (options) {
-                    html += '<div class="decision-buttons">';
-                    options.forEach((opt, i) => {
-                        html += `<button class="primary" onclick="game.eventCallbacks[${i}]()">${opt.text}</button>`;
-                    });
-                    html += '</div>';
-                    this.eventCallbacks = options.map(o => o.action);
+                document.getElementById('questionPanel').innerHTML = html;
+                document.getElementById('questionPanel').style.display = 'block';
+                document.getElementById('eventPanel').style.display = 'none';
+            }
+
+            answerQuestion(choice, correct, isQuestion) {
+                const qPanel = document.getElementById('questionPanel');
+                if (choice === correct) {
+                    this.gameData.correctAnswers++;
+                    this.gameData.food += 100;
+                    qPanel.innerHTML = `<div class="question-title" style="color: #44A08D;">✅ CORRECT!</div>
+                                       <div class="question-text">Great! Your party found extra supplies!</div>
+                                       <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
                 } else {
-                    html += '<div class="decision-buttons"><button class="primary" onclick="game.continueJourney()">CONTINUE</button></div>';
+                    this.gameData.food -= 50;
+                    qPanel.innerHTML = `<div class="question-title" style="color: #FF6B6B;">❌ WRONG!</div>
+                                       <div class="question-text">Your party got lost and wasted supplies.</div>
+                                       <button class="primary" onclick="game.continueJourney()">CONTINUE</button>`;
                 }
-
-                eventPanel.innerHTML = html;
-                eventPanel.style.display = 'block';
             }
 
             presentEvent() {
@@ -524,74 +547,36 @@
                 this.updateUI();
 
                 const eventNum = Math.random();
-                if (eventNum < 0.2) this.illnessEvent();
-                else if (eventNum < 0.35) this.riverCrossing();
-                else if (eventNum < 0.5) this.hunterSuccess();
-                else if (eventNum < 0.65) this.weatherEvent();
+                if (eventNum < 0.4) this.askQuestion();
+                else if (eventNum < 0.6) this.illnessEvent();
+                else if (eventNum < 0.8) this.riverCrossing();
                 else this.continueJourney();
             }
 
             illnessEvent() {
-                const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
-                const illnesses = ['Cholera', 'Dysentery', 'Fever', 'Pneumonia'];
-                const illness = illnesses[Math.floor(Math.random() * illnesses.length)];
                 this.gameData.health -= 15;
-
-                this.showEvent(
-                    `🤒 ${person} is ill!`,
-                    `${person} has contracted ${illness}.\n\nThe party must rest and care for them.`,
-                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
-                );
-            }
-
-            hunterSuccess() {
-                const catch_amt = 150 + Math.floor(Math.random() * 200);
-                this.gameData.food += catch_amt;
-
-                this.showEvent(
-                    '🎯 Successful Hunt!',
-                    `Your party hunted ${catch_amt} lbs of game!\n\nMorale is high and bellies are full.`,
-                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
-                );
+                const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🤒 ${person} is ill!</div>
+                    <div class="event-text">Your party must rest. (If you answer the next question correctly, they'll recover!)</div>
+                    <button class="primary" onclick="game.askQuestion()">HELP THEM</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
             }
 
             riverCrossing() {
-                this.showEvent(
-                    '⛈️ River Crossing',
-                    'A wide river blocks your path. The current is strong.',
-                    [
-                        {
-                            text: 'FORD IT (Risky)',
-                            action: () => {
-                                if (Math.random() < 0.6) {
-                                    this.showEvent('✅ Success!', 'You crossed safely!', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
-                                } else {
-                                    this.gameData.food -= 100;
-                                    this.showEvent('❌ Disaster!', 'The wagon overturned!\nYou lost supplies.', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
-                                }
-                            }
-                        },
-                        {
-                            text: 'FLOAT IT (Safe)',
-                            action: () => {
-                                this.gameData.food -= 30;
-                                this.showEvent('✅ Safe Crossing', 'You crossed carefully.', [{ text: 'CONTINUE', action: () => this.continueJourney() }]);
-                            }
-                        }
-                    ]
-                );
-            }
-
-            weatherEvent() {
-                this.gameData.health -= 10;
-                this.showEvent(
-                    '🌪️ Harsh Weather',
-                    'Strong winds and cold temperatures sweep across the plains.',
-                    [{ text: 'CONTINUE', action: () => this.continueJourney() }]
-                );
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">⛈️ River Crossing!</div>
+                    <div class="event-text">Answer correctly to cross safely!</div>
+                    <button class="primary" onclick="game.askQuestion()">ANSWER QUESTION</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
             }
 
             continueJourney() {
+                document.getElementById('questionPanel').style.display = 'none';
                 document.getElementById('eventPanel').style.display = 'none';
                 this.gameData.stage++;
                 this.gameData.distance = this.locations[this.gameData.stage].distance;
@@ -613,20 +598,21 @@
                     endContent.innerHTML = `
                         <h1 style="font-size: 3em; margin-bottom: 20px;">🎉 YOU REACHED OREGON! 🎉</h1>
                         <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
-                            <p style="font-size: 1.2em; margin-bottom: 15px;">Your party made it!</p>
-                            <p>Distance: ${this.gameData.distance} miles</p>
+                            <p style="font-size: 1.3em; margin-bottom: 20px;"><strong>MISSION ACCOMPLISHED!</strong></p>
+                            <p>Distance Traveled: ${this.gameData.distance} miles</p>
                             <p>Final Food: ${Math.floor(this.gameData.food)} lbs</p>
-                            <p>Oxen: ${this.gameData.oxen}</p>
+                            <p>Party Members Alive: ${this.gameData.members.length}</p>
+                            <p style="margin-top: 20px; font-size: 1.2em; color: #FFD700;">📚 History Questions Answered Correctly: ${this.gameData.correctAnswers}</p>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">PLAY AGAIN</button>
                     `;
                 } else {
                     endContent.innerHTML = `
-                        <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY HAS ENDED ⚰️</h1>
+                        <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY ENDED ⚰️</h1>
                         <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px;">
-                            <p style="font-size: 1.2em; margin-bottom: 15px;">The frontier was too harsh...</p>
                             <p>Distance: ${this.gameData.distance} miles</p>
-                            <p>Food: ${Math.floor(this.gameData.food)} lbs</p>
+                            <p>Questions Answered: ${this.gameData.correctAnswers}</p>
+                            <p style="margin-top: 20px;">The frontier was too harsh this time...</p>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
                     `;
