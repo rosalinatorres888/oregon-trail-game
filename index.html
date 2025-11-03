@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Oregon Trail - Cinematic Edition</title>
+    <title>The Oregon Trail - Mr. Narbe's Classroom Edition</title>
     <style>
         * {
             margin: 0;
@@ -12,897 +12,581 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: #0a0a0a;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            overflow: hidden;
-            color: #fff;
+            padding: 20px;
         }
 
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background: #000;
+            border: 3px solid #00FF00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            padding: 30px;
+            line-height: 1.6;
         }
 
-        .ui-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 100;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00FF00;
+            padding-bottom: 20px;
+            color: #00FF00;
+            text-shadow: 0 0 10px #00FF00;
         }
 
-        .hud {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #fff;
-            pointer-events: auto;
-            z-index: 101;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
+        .header h1 {
+            font-size: 2.5em;
+            letter-spacing: 3px;
             margin-bottom: 10px;
         }
 
-        .stat {
+        .header p {
+            font-size: 1.1em;
+            color: #FFD700;
+        }
+
+        .game-content {
+            min-height: 400px;
+            margin-bottom: 30px;
+            color: #00FF00;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .location-info {
+            background: #111;
+            border: 2px solid #00FF00;
+            padding: 20px;
+            margin-bottom: 20px;
             text-align: center;
+        }
+
+        .location-name {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .stats-display {
+            background: #111;
+            border: 2px solid #00FF00;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            border-left: 2px solid #00FF00;
+            padding-left: 15px;
         }
 
         .stat-label {
-            font-size: 12px;
-            opacity: 0.8;
-            text-transform: uppercase;
+            color: #FFD700;
+            font-weight: bold;
         }
 
         .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4CAF50;
-            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-        }
-
-        .weather-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 8px;
-            pointer-events: auto;
-            z-index: 101;
-            font-size: 14px;
-            border: 2px solid #FF6B6B;
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            pointer-events: auto;
-            z-index: 101;
-            font-size: 12px;
-            color: #aaa;
-        }
-
-        .event-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 3px solid #FF6B6B;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            z-index: 200;
-            pointer-events: auto;
-            max-height: 70vh;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .event-modal.active {
-            display: block;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translate(-50%, -60%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, -50%);
-                opacity: 1;
-            }
-        }
-
-        .event-title {
-            font-size: 2em;
-            margin-bottom: 15px;
-            color: #FF8E53;
-            font-weight: bold;
+            color: #00FF00;
+            margin-top: 5px;
         }
 
         .event-text {
-            font-size: 1.1em;
+            background: #111;
+            border: 2px solid #00FF00;
+            padding: 20px;
+            margin-bottom: 20px;
             line-height: 1.8;
-            margin-bottom: 25px;
-            color: #ddd;
+            min-height: 150px;
+            text-align: center;
         }
 
-        .event-choices {
+        .choices {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
         }
 
-        .choice-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: 2px solid #4ECDC4;
+        button {
+            background: #000;
+            color: #00FF00;
+            border: 2px solid #00FF00;
             padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
+            font-family: 'Courier New', monospace;
             font-size: 1em;
+            cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
             text-align: left;
         }
 
-        .choice-btn:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            border-color: #FF8E53;
-            transform: translateX(10px);
-            box-shadow: 0 0 20px rgba(255, 139, 83, 0.5);
+        button:hover {
+            background: #00FF00;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
 
-        .overlay-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 150;
-            display: none;
+        button:active {
+            transform: scale(0.98);
         }
 
-        .overlay-bg.active {
-            display: block;
+        .input-area {
+            margin-bottom: 20px;
+        }
+
+        input {
+            background: #111;
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
 
         .title-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            z-index: 300;
-            pointer-events: auto;
-        }
-
-        .title-screen.hidden {
-            display: none;
-        }
-
-        .title-screen h1 {
-            font-size: 5em;
-            font-weight: bold;
-            text-shadow: 3px 3px 10px rgba(0,0,0,0.7);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .title-screen p {
-            font-size: 1.3em;
-            max-width: 600px;
             text-align: center;
+        }
+
+        .title-art {
+            font-size: 2em;
+            margin: 20px 0;
+            line-height: 1.4;
+            white-space: pre;
+        }
+
+        .intro-text {
+            margin: 30px 0;
             line-height: 1.8;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .start-btn {
-            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-            color: white;
-            border: none;
-            padding: 20px 50px;
-            font-size: 1.3em;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            color: #00FF00;
         }
 
         .end-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            z-index: 300;
-            pointer-events: auto;
-            display: none;
+            text-align: center;
         }
 
-        .end-screen.active {
-            display: flex;
+        .end-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 0 0 10px #FFD700;
         }
 
-        .end-screen h1 {
-            font-size: 4em;
-            font-weight: bold;
-            text-shadow: 3px 3px 10px rgba(0,0,0,0.7);
-        }
-
-        .end-screen .summary {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 30px;
-            border-radius: 15px;
-            border: 2px solid #4ECDC4;
-            max-width: 600px;
+        .final-stats {
+            background: #111;
+            border: 2px solid #00FF00;
+            padding: 20px;
+            margin: 20px 0;
             text-align: left;
-            font-size: 1.1em;
-            line-height: 1.8;
+        }
+
+        .death-message {
+            color: #FF0000;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: #111;
+            border: 2px solid #00FF00;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .bar {
+            background: #000;
+            border: 1px solid #00FF00;
+            height: 20px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: #00FF00;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    
-    <div class="ui-overlay">
-        <div class="hud">
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-label">Distance</div>
-                    <div class="stat-value"><span id="distance">0</span> mi</div>
+    <div class="game-container">
+        <div class="header">
+            <h1>THE OREGON TRAIL</h1>
+            <p>👨‍🏫 Mr. Narbe's Classroom Edition 👨‍🏫</p>
+        </div>
+
+        <!-- TITLE SCREEN -->
+        <div class="screen active" id="titleScreen">
+            <div class="title-screen">
+                <div class="title-art">
+     ~~~~o~~~
+     ~^~^~^~
+    ~~|~~~|~~
+    ~~O~~~O~~
                 </div>
-                <div class="stat">
-                    <div class="stat-label">Health</div>
-                    <div class="stat-value"><span id="health">100</span>%</div>
+                
+                <div class="intro-text">
+                    <p>You are a 19th century pioneer bound for the Oregon Territory,
+                    2000 miles away. You have a team of oxen and limited supplies.</p>
+                    
+                    <p>The well-being of your party depends on your decisions and luck.
+                    Do you have what it takes to survive the Oregon Trail?</p>
                 </div>
-                <div class="stat">
-                    <div class="stat-label">Food</div>
-                    <div class="stat-value"><span id="food">500</span> lb</div>
+
+                <div class="input-area">
+                    <label>What is your name?</label>
+                    <input type="text" id="playerName" placeholder="Enter your name" value="Narbe's Student">
                 </div>
-                <div class="stat">
-                    <div class="stat-label">Oxen</div>
-                    <div class="stat-value"><span id="oxen">4</span></div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Date</div>
-                    <div class="stat-value"><span id="date">Mar 1847</span></div>
-                </div>
+
+                <button onclick="game.startGame()">CONTINUE</button>
             </div>
         </div>
 
-        <div class="controls">
-            Space: Continue | R: Rest | H: Hunt | S: Store
+        <!-- MAIN GAME SCREEN -->
+        <div class="screen" id="gameScreen">
+            <div class="location-info">
+                <div class="location-name" id="locationName">Independence, Missouri</div>
+            </div>
+
+            <div class="progress-bar">
+                <div>PROGRESS: <span id="progressText">0</span>/2000 MILES</div>
+                <div class="bar">
+                    <div class="bar-fill" id="barFill"></div>
+                </div>
+            </div>
+
+            <div class="stats-display">
+                <div class="stat-item">
+                    <div class="stat-label">SUPPLIES</div>
+                    <div class="stat-value">Food: <span id="food">2000</span> lbs</div>
+                    <div class="stat-value" style="margin-top: 8px;">Money: $<span id="money">1600</span></div>
+                    <div class="stat-value" style="margin-top: 8px;">Oxen: <span id="oxen">4</span></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">PARTY STATUS</div>
+                    <div class="stat-value">Health: <span id="health">100</span>%</div>
+                    <div class="stat-value" style="margin-top: 8px;">Pace: <span id="pace">Steady</span></div>
+                    <div class="stat-value" style="margin-top: 8px;">Date: <span id="date">March 1847</span></div>
+                </div>
+            </div>
+
+            <div class="event-text" id="eventText"></div>
+
+            <div class="choices" id="choices"></div>
         </div>
 
-        <div class="weather-indicator">
-            <div id="weather">🌤️ Clear Skies</div>
-            <div id="season" style="margin-top: 5px;">Spring</div>
+        <!-- END SCREEN -->
+        <div class="screen" id="endScreen">
+            <div class="end-screen">
+                <div class="end-title" id="endTitle"></div>
+                <div id="deathMessage" class="death-message"></div>
+                <div class="final-stats" id="finalStats"></div>
+                <button onclick="location.reload()">PLAY AGAIN</button>
+            </div>
         </div>
-    </div>
-
-    <div class="overlay-bg" id="overlayBg"></div>
-
-    <div class="event-modal" id="eventModal">
-        <div class="event-title" id="eventTitle"></div>
-        <div class="event-text" id="eventText"></div>
-        <div class="event-choices" id="eventChoices"></div>
-    </div>
-
-    <div class="title-screen" id="titleScreen">
-        <h1>🚐 THE OREGON TRAIL 🚐</h1>
-        <p>Journey across 2,000 miles of untamed wilderness. Manage resources, survive hardships, and lead your party to Oregon!</p>
-        <button class="start-btn" onclick="game.startGame()">BEGIN JOURNEY</button>
-    </div>
-
-    <div class="end-screen" id="endScreen">
-        <h1 id="endTitle"></h1>
-        <div class="summary" id="endSummary"></div>
-        <button class="start-btn" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const gameState = {
-            distance: 0,
-            health: 100,
-            food: 500,
-            oxen: 4,
-            money: 1500,
-            wagonX: canvas.width / 2,
-            wagonY: canvas.height * 0.65,
-            speed: 0,
-            maxSpeed: 3,
-            isMoving: false,
-            weather: 'clear',
-            temperature: 65,
-            particles: [],
-            characters: [],
-            date: { month: 3, year: 1847 },
-            daysOnTrail: 0,
-            gameActive: false,
-            inEvent: false
-        };
-
-        class Particle {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.type = type;
-                this.life = 1;
-                this.maxLife = 1;
-                
-                if (type === 'dust') {
-                    this.vx = (Math.random() - 0.5) * 2;
-                    this.vy = (Math.random() - 0.5) * 1 - 0.5;
-                    this.size = Math.random() * 3 + 1;
-                    this.maxLife = 1.5;
-                } else if (type === 'rain') {
-                    this.vx = -2;
-                    this.vy = 8;
-                    this.size = 1;
-                    this.maxLife = 0.8;
-                }
-            }
-
-            update(dt) {
-                this.life -= dt / this.maxLife;
-                this.x += this.vx;
-                this.y += this.vy;
-            }
-
-            draw() {
-                ctx.globalAlpha = this.life * 0.7;
-                
-                if (this.type === 'dust') {
-                    ctx.fillStyle = `rgba(200, 150, 100, ${this.life})`;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (this.type === 'rain') {
-                    ctx.strokeStyle = `rgba(150, 200, 255, ${this.life * 0.8})`;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(this.x, this.y);
-                    ctx.lineTo(this.x + this.vx * 0.1, this.y + this.vy * 0.1);
-                    ctx.stroke();
-                }
-                
-                ctx.globalAlpha = 1;
-            }
-        }
-
-        class Character {
-            constructor(offset) {
-                this.offset = offset;
-                this.walkCycle = Math.random() * Math.PI * 2;
-                this.bobbing = 0;
-            }
-
-            update(dt) {
-                this.walkCycle += dt * 3;
-                this.bobbing = Math.sin(this.walkCycle) * 3;
-            }
-
-            draw(wagonX, wagonY) {
-                const x = wagonX + this.offset - 40;
-                const y = wagonY - 60 + this.bobbing;
-
-                ctx.fillStyle = '#8B4513';
-                
-                ctx.beginPath();
-                ctx.arc(x, y - 20, 6, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillRect(x - 3, y - 13, 6, 15);
-
-                const legOffset = Math.sin(this.walkCycle) * 3;
-                ctx.fillRect(x - 3, y + 2, 2, 8 + legOffset);
-                ctx.fillRect(x + 1, y + 2, 2, 8 - legOffset);
-
-                ctx.strokeStyle = '#8B4513';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x, y - 8);
-                ctx.lineTo(x - 5 - legOffset, y - 3);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x, y - 8);
-                ctx.lineTo(x + 5 + legOffset, y - 3);
-                ctx.stroke();
-            }
-        }
-
-        for (let i = 0; i < 3; i++) {
-            gameState.characters.push(new Character(-60 - i * 30));
-        }
-
-        function drawTerrain(offset) {
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            
-            if (gameState.weather === 'clear') {
-                skyGradient.addColorStop(0, '#87CEEB');
-                skyGradient.addColorStop(1, '#E0F6FF');
-            } else if (gameState.weather === 'rain') {
-                skyGradient.addColorStop(0, '#4a5568');
-                skyGradient.addColorStop(1, '#667eea');
-            } else if (gameState.weather === 'dust') {
-                skyGradient.addColorStop(0, '#CD853F');
-                skyGradient.addColorStop(1, '#DEB887');
-            }
-            
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const sunY = canvas.height * 0.2 + Math.sin((gameState.date.month - 1) / 12 * Math.PI) * 50;
-            const sunX = canvas.width * 0.8;
-
-            if (gameState.weather === 'clear') {
-                const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 40);
-                sunGradient.addColorStop(0, 'rgba(255, 200, 0, 0.9)');
-                sunGradient.addColorStop(1, 'rgba(255, 200, 0, 0)');
-                ctx.fillStyle = sunGradient;
-                ctx.beginPath();
-                ctx.arc(sunX, sunY, 40, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            ctx.fillStyle = '#90EE90';
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height * 0.65);
-            
-            for (let x = 0; x <= canvas.width; x += 20) {
-                const baseY = canvas.height * 0.65;
-                const wave = Math.sin((x + offset) * 0.01) * 10 + Math.sin((x + offset) * 0.003) * 15;
-                ctx.lineTo(x, baseY + wave);
-            }
-            
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.lineTo(0, canvas.height);
-            ctx.closePath();
-            ctx.fill();
-
-            drawTrees(offset);
-        }
-
-        function drawTrees(offset) {
-            const treePositions = [100, 300, 500, 700, 900, 1100, 1300];
-            
-            for (let basePos of treePositions) {
-                let x = ((basePos - offset) % (canvas.width + 200)) - 100;
-                if (x < -100) x += canvas.width + 200;
-
-                const gradient = ctx.createRadialGradient(x, 300, 0, x, 300, 35);
-                gradient.addColorStop(0, '#228B22');
-                gradient.addColorStop(0.7, '#1a6b1a');
-                gradient.addColorStop(1, 'rgba(26, 107, 26, 0)');
-
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(x, 300, 35, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(x - 5, 330, 10, 40);
-            }
-        }
-
-        function drawWagon() {
-            const x = gameState.wagonX;
-            const y = gameState.wagonY;
-            const bob = Math.sin(gameState.distance * 0.01) * 2;
-
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(x - 50, y + bob, 100, 40);
-
-            ctx.strokeStyle = '#654321';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x - 50, y + bob, 100, 40);
-
-            ctx.fillStyle = '#333';
-            ctx.beginPath();
-            ctx.arc(x - 30, y + 45 + bob, 12, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 30, y + 45 + bob, 12, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x - 30, y + 45 + bob, 12, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(x + 30, y + 45 + bob, 12, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.strokeStyle = '#F5DEB3';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(x - 45, y + bob);
-            ctx.quadraticCurveTo(x, y - 20 + bob, x + 45, y + bob);
-            ctx.stroke();
-
-            if (gameState.isMoving) {
-                for (let i = 0; i < 3; i++) {
-                    gameState.particles.push(new Particle(x - 50 - Math.random() * 20, y + 40 + Math.random() * 20, 'dust'));
-                }
-            }
-        }
-
-        function updateParticles(dt) {
-            gameState.particles = gameState.particles.filter(p => {
-                p.update(dt);
-                return p.life > 0;
-            });
-
-            if (gameState.weather === 'rain') {
-                for (let i = 0; i < 5; i++) {
-                    gameState.particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height * 0.5, 'rain'));
-                }
-            } else if (gameState.weather === 'dust' && gameState.isMoving) {
-                for (let i = 0; i < 8; i++) {
-                    gameState.particles.push(new Particle(canvas.width * 0.8, canvas.height * 0.4 + Math.random() * 100, 'dust'));
-                }
-            }
-        }
-
-        // GAME EVENTS
-        const events = [
-            {
-                name: 'illness',
-                trigger: () => Math.random() < 0.15 && gameState.health > 0,
-                execute: () => {
-                    const illnesses = ['Cholera', 'Dysentery', 'Typhoid', 'Fever'];
-                    const illness = illnesses[Math.floor(Math.random() * illnesses.length)];
-                    game.showEvent(
-                        `🤒 ${illness}!`,
-                        `A party member has contracted ${illness}. What do you do?`,
-                        [
-                            { text: 'Rest for recovery (+15 health, -50 food)', action: () => {
-                                gameState.health = Math.min(100, gameState.health + 15);
-                                gameState.food -= 50;
-                                gameState.isMoving = false;
-                                game.continueJourney();
-                            }},
-                            { text: 'Keep moving (risky)', action: () => {
-                                if (Math.random() < 0.5) {
-                                    game.showEvent('💀 Death', 'The party member did not survive...', [
-                                        { text: 'Continue', action: () => {
-                                            gameState.health -= 30;
-                                            game.continueJourney();
-                                        }}
-                                    ]);
-                                } else {
-                                    gameState.health -= 15;
-                                    game.continueJourney();
-                                }
-                            }}
-                        ]
-                    );
-                }
-            },
-            {
-                name: 'hunt',
-                trigger: () => Math.random() < 0.2,
-                execute: () => {
-                    game.showEvent(
-                        '🎯 Hunting Opportunity',
-                        'Your scouts spot buffalo! Hunt them?',
-                        [
-                            { text: 'Hunt (+150 food)', action: () => {
-                                gameState.food += 150;
-                                game.continueJourney();
-                            }},
-                            { text: 'Skip (save time)', action: () => {
-                                game.continueJourney();
-                            }}
-                        ]
-                    );
-                }
-            },
-            {
-                name: 'river',
-                trigger: () => Math.random() < 0.18,
-                execute: () => {
-                    game.showEvent(
-                        '⛈️ River Crossing',
-                        'A wide river blocks your path. The current is dangerous.',
-                        [
-                            { text: 'Ford it (-50 food, risky)', action: () => {
-                                if (Math.random() < 0.6) {
-                                    gameState.food -= 50;
-                                    game.continueJourney();
-                                } else {
-                                    gameState.food -= 150;
-                                    gameState.oxen -= 1;
-                                    game.showEvent('💀 Disaster!', 'The wagon overturned! Lost supplies and an ox.', [
-                                        { text: 'Continue', action: () => game.continueJourney() }
-                                    ]);
-                                }
-                            }},
-                            { text: 'Float it (safe, +2 days)', action: () => {
-                                gameState.daysOnTrail += 2;
-                                game.continueJourney();
-                            }}
-                        ]
-                    );
-                }
-            },
-            {
-                name: 'bandits',
-                trigger: () => Math.random() < 0.12,
-                execute: () => {
-                    game.showEvent(
-                        '🏴‍☠️ Bandits!',
-                        'A group of rough travelers approaches your camp.',
-                        [
-                            { text: 'Fight them (risky)', action: () => {
-                                if (Math.random() < 0.5) {
-                                    gameState.money -= 300;
-                                    game.showEvent('💰 Robbed!', 'They took your money but you survived.', [
-                                        { text: 'Continue', action: () => game.continueJourney() }
-                                    ]);
-                                } else {
-                                    game.showEvent('✅ Victory!', 'Your party fought them off!', [
-                                        { text: 'Continue', action: () => game.continueJourney() }
-                                    ]);
-                                }
-                            }},
-                            { text: 'Trade with them (-$100, +100 food)', action: () => {
-                                gameState.money -= 100;
-                                gameState.food += 100;
-                                game.continueJourney();
-                            }}
-                        ]
-                    );
-                }
-            },
-            {
-                name: 'oxen_death',
-                trigger: () => Math.random() < 0.15 && gameState.oxen > 1,
-                execute: () => {
-                    game.showEvent(
-                        '🐴 Oxen Died',
-                        'One of your oxen has died from exhaustion.',
-                        [
-                            { text: 'Continue', action: () => {
-                                gameState.oxen -= 1;
-                                game.continueJourney();
-                            }}
-                        ]
-                    );
-                }
-            },
-            {
-                name: 'weather',
-                trigger: () => Math.random() < 0.1,
-                execute: () => {
-                    const weatherTypes = ['dust', 'rain', 'snow'];
-                    gameState.weather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-                    game.continueJourney();
-                }
-            }
-        ];
-
         const game = {
+            playerName: '',
+            distance: 0,
+            food: 2000,
+            money: 1600,
+            oxen: 4,
+            health: 100,
+            pace: 'Steady',
+            date: { month: 3, year: 1847 },
+            daysSpent: 0,
+            totalDistance: 2000,
+            currentLocation: 0,
+            gameActive: false,
+            inEvent: false,
+
+            locations: [
+                { name: 'Independence, Missouri', distance: 0 },
+                { name: 'Fort Kearny, Nebraska', distance: 300 },
+                { name: 'Chimney Rock, Nebraska', distance: 420 },
+                { name: 'Fort Laramie, Wyoming', distance: 645 },
+                { name: 'Fort Hall, Idaho', distance: 1197 },
+                { name: 'The Dalles, Oregon', distance: 1665 },
+                { name: 'Willamette Valley, Oregon', distance: 2000 }
+            ],
+
+            events: [
+                {
+                    name: 'illness',
+                    chance: 0.15,
+                    text: `One of your party members has dysentery!\n\nDysentery is a serious intestinal disease.\nWhat do you do?`,
+                    choices: [
+                        { text: '1. Rest for 3 days (lose 3 days, spend $10 on medicine)', action: () => {
+                            game.daysSpent += 3;
+                            game.money -= 10;
+                            game.health = Math.min(100, game.health + 20);
+                            game.continueTrail();
+                        }},
+                        { text: '2. Keep moving (risky)', action: () => {
+                            if (Math.random() < 0.4) {
+                                game.showEvent(`${game.playerName}'s party member has died.\n\nOh no! Someone in your party has died of dysentery.`, [
+                                    { text: 'CONTINUE', action: () => {
+                                        game.health -= 40;
+                                        game.continueTrail();
+                                    }}
+                                ]);
+                            } else {
+                                game.health -= 15;
+                                game.continueTrail();
+                            }
+                        }}
+                    ]
+                },
+                {
+                    name: 'hunt',
+                    chance: 0.2,
+                    text: `You see a buffalo herd!\n\nYour hunters can try to shoot some for meat.\nAttempt the hunt?`,
+                    choices: [
+                        { text: '1. Hunt for buffalo (+500 food)', action: () => {
+                            game.food += 500;
+                            game.continueTrail();
+                        }},
+                        { text: '2. Skip hunting (save time)', action: () => {
+                            game.continueTrail();
+                        }}
+                    ]
+                },
+                {
+                    name: 'river',
+                    chance: 0.18,
+                    text: `You reach a river crossing!\n\nThe river is wide and the current is strong.\nHow do you cross?`,
+                    choices: [
+                        { text: '1. Ford across (risky, -100 food)', action: () => {
+                            if (Math.random() < 0.6) {
+                                game.food -= 100;
+                                game.continueTrail();
+                            } else {
+                                game.showEvent(`DISASTER!\n\nThe wagon overturned in the river!\nYou lost supplies and an ox!`, [
+                                    { text: 'CONTINUE', action: () => {
+                                        game.food -= 300;
+                                        game.oxen -= 1;
+                                        game.continueTrail();
+                                    }}
+                                ]);
+                            }
+                        }},
+                        { text: '2. Caulk wagon and float (+2 days, safer)', action: () => {
+                            game.daysSpent += 2;
+                            game.continueTrail();
+                        }}
+                    ]
+                },
+                {
+                    name: 'bandits',
+                    chance: 0.1,
+                    text: `Rough-looking strangers approach your camp!\n\nThey look like they might rob you.\nWhat do you do?`,
+                    choices: [
+                        { text: '1. Stand and fight (risky)', action: () => {
+                            if (Math.random() < 0.5) {
+                                game.showEvent(`AMBUSHED!\n\nThe bandits overwhelmed your party.\nYou lost $400 and supplies!`, [
+                                    { text: 'CONTINUE', action: () => {
+                                        game.money -= 400;
+                                        game.food -= 200;
+                                        game.continueTrail();
+                                    }}
+                                ]);
+                            } else {
+                                game.continueTrail();
+                            }
+                        }},
+                        { text: '2. Trade with them ($100 for +200 food)', action: () => {
+                            game.money -= 100;
+                            game.food += 200;
+                            game.continueTrail();
+                        }}
+                    ]
+                },
+                {
+                    name: 'oxen_dies',
+                    chance: 0.12,
+                    text: `One of your oxen has died!\n\nWithout enough oxen, the wagon moves slower.`,
+                    choices: [
+                        { text: 'CONTINUE', action: () => {
+                            game.oxen -= 1;
+                            game.continueTrail();
+                        }}
+                    ]
+                },
+                {
+                    name: 'weather',
+                    chance: 0.08,
+                    text: `SEVERE WEATHER!\n\nA terrible storm blocks the trail.\nYou lose a day of travel.`,
+                    choices: [
+                        { text: 'CONTINUE', action: () => {
+                            game.daysSpent += 1;
+                            game.continueTrail();
+                        }}
+                    ]
+                }
+            ],
+
             startGame() {
-                document.getElementById('titleScreen').classList.add('hidden');
-                gameState.gameActive = true;
-                gameState.isMoving = true;
-                game.triggerRandomEvent();
+                this.playerName = document.getElementById('playerName').value || 'Traveler';
+                document.getElementById('titleScreen').classList.remove('active');
+                document.getElementById('gameScreen').classList.add('active');
+                this.gameActive = true;
+                this.updateDisplay();
+                this.advanceTrail();
             },
 
-            showEvent(title, text, choices) {
-                gameState.inEvent = true;
-                gameState.isMoving = false;
-                
-                document.getElementById('eventTitle').textContent = title;
+            advanceTrail() {
+                if (this.distance >= this.totalDistance) {
+                    this.endGame(true);
+                    return;
+                }
+
+                if (this.food <= 0 || this.health <= 0 || this.oxen <= 0) {
+                    this.endGame(false);
+                    return;
+                }
+
+                // Trigger random events
+                for (let event of this.events) {
+                    if (Math.random() < event.chance) {
+                        this.showEvent(event.text, event.choices);
+                        return;
+                    }
+                }
+
+                // No event, continue trail
+                this.continueTrail();
+            },
+
+            continueTrail() {
+                // Travel
+                let dailyDistance = 0;
+                if (this.pace === 'Steady') dailyDistance = 20;
+                else if (this.pace === 'Grueling') dailyDistance = 30;
+                else if (this.pace === 'Resting') dailyDistance = 10;
+
+                this.distance += dailyDistance;
+                this.daysSpent += 1;
+                this.food -= 5 + (this.oxen * 0.5); // Daily consumption
+                this.health -= 0.5; // Gradual health loss
+
+                this.updateDisplay();
+
+                // Check for new location
+                let newLocation = 0;
+                for (let i = 0; i < this.locations.length; i++) {
+                    if (this.distance >= this.locations[i].distance) {
+                        newLocation = i;
+                    }
+                }
+
+                if (newLocation !== this.currentLocation) {
+                    this.currentLocation = newLocation;
+                    this.showEvent(`You've arrived at ${this.locations[newLocation].name}!`, [
+                        { text: 'CONTINUE', action: () => this.advanceTrail() }
+                    ]);
+                    return;
+                }
+
+                setTimeout(() => this.advanceTrail(), 1000);
+            },
+
+            showEvent(text, choices) {
+                this.inEvent = true;
                 document.getElementById('eventText').textContent = text;
-                
-                const choicesDiv = document.getElementById('eventChoices');
+                const choicesDiv = document.getElementById('choices');
                 choicesDiv.innerHTML = '';
                 
                 choices.forEach(choice => {
                     const btn = document.createElement('button');
-                    btn.className = 'choice-btn';
                     btn.textContent = choice.text;
                     btn.onclick = choice.action;
                     choicesDiv.appendChild(btn);
                 });
-                
-                document.getElementById('eventModal').classList.add('active');
-                document.getElementById('overlayBg').classList.add('active');
             },
 
-            closeEvent() {
-                document.getElementById('eventModal').classList.remove('active');
-                document.getElementById('overlayBg').classList.remove('active');
-                gameState.inEvent = false;
-            },
-
-            triggerRandomEvent() {
-                for (let event of events) {
-                    if (event.trigger()) {
-                        event.execute();
-                        return;
-                    }
-                }
-                game.continueJourney();
-            },
-
-            continueJourney() {
-                game.closeEvent();
+            updateDisplay() {
+                document.getElementById('locationName').textContent = this.locations[this.currentLocation].name;
+                document.getElementById('distance').textContent = Math.floor(this.distance);
+                document.getElementById('progressText').textContent = Math.floor(this.distance);
+                document.getElementById('barFill').style.width = (this.distance / this.totalDistance * 100) + '%';
+                document.getElementById('food').textContent = Math.max(0, Math.floor(this.food));
+                document.getElementById('money').textContent = Math.floor(this.money);
+                document.getElementById('oxen').textContent = Math.max(0, this.oxen);
+                document.getElementById('health').textContent = Math.max(0, Math.floor(this.health));
                 
-                if (gameState.distance >= 2000) {
-                    game.endGame(true);
-                    return;
-                }
-                
-                if (gameState.health <= 0 || gameState.food <= 0 || gameState.oxen <= 0) {
-                    game.endGame(false);
-                    return;
-                }
-                
-                gameState.isMoving = true;
-                setTimeout(() => game.triggerRandomEvent(), 3000);
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const month = ((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12) + 1;
+                document.getElementById('date').textContent = monthNames[month - 1] + ' ' + this.date.year;
             },
 
             endGame(success) {
-                gameState.gameActive = false;
-                gameState.isMoving = false;
-                
-                const endScreen = document.getElementById('endScreen');
-                const endTitle = document.getElementById('endTitle');
-                const endSummary = document.getElementById('endSummary');
-                
+                this.gameActive = false;
+                document.getElementById('gameScreen').classList.remove('active');
+                document.getElementById('endScreen').classList.add('active');
+
                 if (success) {
-                    endTitle.textContent = '🎉 YOU REACHED OREGON! 🎉';
-                    endSummary.innerHTML = `
-                        <strong>SUCCESS!</strong><br><br>
-                        Distance: ${Math.floor(gameState.distance)} miles<br>
-                        Health: ${Math.floor(gameState.health)}%<br>
-                        Food: ${Math.floor(gameState.food)} lbs<br>
-                        Oxen: ${gameState.oxen}<br>
-                        Days: ${gameState.daysOnTrail}<br><br>
-                        Your party made it to the promised land!
+                    document.getElementById('endTitle').textContent = `${this.playerName}, you have successfully reached Oregon!`;
+                    document.getElementById('finalStats').textContent = `
+Your party made it 2000 miles in ${this.daysSpent} days!
+
+Final Supplies:
+• Food: ${Math.floor(this.food)} lbs
+• Money: $${Math.floor(this.money)}
+• Oxen: ${this.oxen}
+
+You arrived in: ${monthNames[((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12)]}
+
+Congratulations! You survived the Oregon Trail!
                     `;
                 } else {
-                    endTitle.textContent = '💀 YOUR JOURNEY ENDED 💀';
-                    endSummary.innerHTML = `
-                        <strong>GAME OVER</strong><br><br>
-                        Distance: ${Math.floor(gameState.distance)} miles<br>
-                        Health: ${Math.floor(gameState.health)}%<br>
-                        Food: ${Math.floor(gameState.food)} lbs<br>
-                        Oxen: ${gameState.oxen}<br><br>
-                        The frontier proved too harsh for your party.
+                    document.getElementById('endTitle').textContent = `${this.playerName}'s party did not make it...`;
+                    let cause = 'starvation';
+                    if (this.health <= 0) cause = 'illness';
+                    if (this.oxen <= 0) cause = 'inability to move';
+                    
+                    document.getElementById('deathMessage').textContent = `Your party died of ${cause}.`;
+                    document.getElementById('finalStats').textContent = `
+Distance traveled: ${Math.floor(this.distance)} miles
+Days on trail: ${this.daysSpent}
+Food remaining: ${Math.floor(this.food)} lbs
+Health: ${Math.floor(this.health)}%
+
+Your grave rests on the Oregon Trail...
                     `;
                 }
-                
-                endScreen.classList.add('active');
             }
         };
 
-        let lastTime = Date.now();
-        function gameLoop() {
-            const now = Date.now();
-            const dt = (now - lastTime) / 1000;
-            lastTime = now;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            drawTerrain(gameState.distance);
-
-            for (let char of gameState.characters) {
-                char.update(dt);
-                char.draw(gameState.wagonX, gameState.wagonY);
-            }
-
-            drawWagon();
-
-            updateParticles(dt);
-            for (let particle of gameState.particles) {
-                particle.draw();
-            }
-
-            if (gameState.gameActive && !gameState.inEvent) {
-                if (gameState.isMoving && gameState.speed < gameState.maxSpeed) {
-                    gameState.speed += 0.5;
-                } else if (!gameState.isMoving && gameState.speed > 0) {
-                    gameState.speed *= 0.95;
-                }
-
-                if (gameState.speed > 0.1) {
-                    gameState.distance += gameState.speed;
-                }
-
-                if (gameState.isMoving) {
-                    gameState.health -= dt * 0.5;
-                    gameState.food -= dt * 0.3;
-                }
-            }
-
-            document.getElementById('distance').textContent = Math.floor(gameState.distance);
-            document.getElementById('health').textContent = Math.max(0, Math.floor(gameState.health));
-            document.getElementById('food').textContent = Math.max(0, Math.floor(gameState.food));
-            document.getElementById('oxen').textContent = gameState.oxen;
-
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = ((gameState.date.month - 1 + Math.floor(gameState.distance / 500)) % 12) + 1;
-            document.getElementById('date').textContent = monthNames[month - 1] + ' ' + gameState.date.year;
-
-            const weatherEmoji = { clear: '🌤️ Clear Skies', rain: '🌧️ Heavy Rain', dust: '🌪️ Dust Storm', snow: '❄️ Heavy Snow' };
-            document.getElementById('weather').textContent = weatherEmoji[gameState.weather] || '🌤️ Clear Skies';
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && gameState.gameActive && !gameState.inEvent) {
-                gameState.isMoving = true;
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'Space') {
-                gameState.isMoving = false;
-                gameState.speed = 0;
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-
-        gameLoop();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     </script>
 </body>
 </html>
