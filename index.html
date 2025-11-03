@@ -12,176 +12,244 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: #000;
-            color: #fff;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
 
         .game-container {
             width: 100%;
-            max-width: 900px;
-            background: #000;
-            border: 3px solid #00FF00;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            padding: 30px;
-            line-height: 1.6;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
         }
 
         .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 40px;
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #00FF00;
-            padding-bottom: 20px;
-            color: #00FF00;
-            text-shadow: 0 0 10px #00FF00;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
-            font-size: 2.5em;
-            letter-spacing: 3px;
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .header .wagon-emoji {
+            font-size: 4em;
             margin-bottom: 10px;
         }
 
-        .header p {
-            font-size: 1.1em;
+        .header .subtitle {
+            font-size: 1.8em;
             color: #FFD700;
+            margin-bottom: 10px;
         }
 
-        .game-content {
-            min-height: 400px;
-            margin-bottom: 30px;
-            color: #00FF00;
+        .content {
+            padding: 40px;
+            min-height: 500px;
         }
 
         .screen {
             display: none;
+            animation: fadeIn 0.5s ease-in;
         }
 
         .screen.active {
             display: block;
         }
 
-        .location-info {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .location-name {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #FFD700;
-        }
-
-        .stats-display {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .stat-item {
-            padding: 10px;
-            border-left: 2px solid #00FF00;
-            padding-left: 15px;
-        }
-
-        .stat-label {
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        .stat-value {
-            color: #00FF00;
-            margin-top: 5px;
-        }
-
-        .event-text {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
-            margin-bottom: 20px;
-            line-height: 1.8;
-            min-height: 150px;
-            text-align: center;
-        }
-
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        button {
-            background: #000;
-            color: #00FF00;
-            border: 2px solid #00FF00;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-align: left;
-        }
-
-        button:hover {
-            background: #00FF00;
-            color: #000;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .input-area {
-            margin-bottom: 20px;
-        }
-
-        input {
-            background: #111;
-            color: #00FF00;
-            border: 2px solid #00FF00;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 10px;
-        }
-
-        input:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .title-screen {
             text-align: center;
         }
 
-        .title-art {
-            font-size: 2em;
-            margin: 20px 0;
-            line-height: 1.4;
-            white-space: pre;
+        .intro-text {
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #333;
+            margin: 30px 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .intro-text {
+        .name-input {
             margin: 30px 0;
+        }
+
+        .name-input label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .name-input input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .name-input input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            border-color: #764ba2;
+        }
+
+        button {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #764ba2;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .location-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .event-box {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #FF6B6B;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .event-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 15px;
+        }
+
+        .event-text {
+            font-size: 1.1em;
+            color: #333;
             line-height: 1.8;
-            color: #00FF00;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: 2px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            border-color: #FF8E53;
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(255, 139, 83, 0.5);
         }
 
         .end-screen {
@@ -189,126 +257,116 @@
         }
 
         .end-title {
-            font-size: 2em;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
             margin-bottom: 20px;
-            color: #FFD700;
-            text-shadow: 0 0 10px #FFD700;
         }
 
-        .final-stats {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 20px;
+        .end-emoji {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .end-stats {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
             margin: 20px 0;
             text-align: left;
+            font-size: 1.1em;
+            line-height: 2;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .death-message {
-            color: #FF0000;
+            color: #FF6B6B;
+            font-size: 1.3em;
             font-weight: bold;
-            font-size: 1.2em;
             margin-bottom: 20px;
-        }
-
-        .progress-bar {
-            background: #111;
-            border: 2px solid #00FF00;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .bar {
-            background: #000;
-            border: 1px solid #00FF00;
-            height: 20px;
-            margin: 10px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            background: #00FF00;
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="header">
+            <div class="wagon-emoji">🚐</div>
             <h1>THE OREGON TRAIL</h1>
-            <p>👨‍🏫 Mr. Narbe's Classroom Edition 👨‍🏫</p>
+            <div class="subtitle">👨‍🏫 Mr. Narbe's Classroom Edition 👨‍🏫</div>
         </div>
 
-        <!-- TITLE SCREEN -->
-        <div class="screen active" id="titleScreen">
-            <div class="title-screen">
-                <div class="title-art">
-     ~~~~o~~~
-     ~^~^~^~
-    ~~|~~~|~~
-    ~~O~~~O~~
-                </div>
-                
-                <div class="intro-text">
-                    <p>You are a 19th century pioneer bound for the Oregon Territory,
-                    2000 miles away. You have a team of oxen and limited supplies.</p>
-                    
-                    <p>The well-being of your party depends on your decisions and luck.
-                    Do you have what it takes to survive the Oregon Trail?</p>
-                </div>
+        <div class="content">
+            <!-- TITLE SCREEN -->
+            <div class="screen active" id="titleScreen">
+                <div class="title-screen">
+                    <div class="intro-text">
+                        <p><strong>You are a 19th century pioneer bound for the Oregon Territory, 2000 miles away.</strong></p>
+                        <p>You have a team of oxen and limited supplies. The well-being of your party depends on your decisions and luck.</p>
+                        <p><strong>Do you have what it takes to survive the Oregon Trail?</strong></p>
+                    </div>
 
-                <div class="input-area">
-                    <label>What is your name?</label>
-                    <input type="text" id="playerName" placeholder="Enter your name" value="Narbe's Student">
-                </div>
+                    <div class="name-input">
+                        <label>What is your name?</label>
+                        <input type="text" id="playerName" placeholder="Enter your name" value="Narbe's Student">
+                    </div>
 
-                <button onclick="game.startGame()">CONTINUE</button>
-            </div>
-        </div>
-
-        <!-- MAIN GAME SCREEN -->
-        <div class="screen" id="gameScreen">
-            <div class="location-info">
-                <div class="location-name" id="locationName">Independence, Missouri</div>
-            </div>
-
-            <div class="progress-bar">
-                <div>PROGRESS: <span id="progressText">0</span>/2000 MILES</div>
-                <div class="bar">
-                    <div class="bar-fill" id="barFill"></div>
+                    <button onclick="game.startGame()">BEGIN JOURNEY</button>
                 </div>
             </div>
 
-            <div class="stats-display">
-                <div class="stat-item">
-                    <div class="stat-label">SUPPLIES</div>
-                    <div class="stat-value">Food: <span id="food">2000</span> lbs</div>
-                    <div class="stat-value" style="margin-top: 8px;">Money: $<span id="money">1600</span></div>
-                    <div class="stat-value" style="margin-top: 8px;">Oxen: <span id="oxen">4</span></div>
+            <!-- GAME SCREEN -->
+            <div class="screen" id="gameScreen">
+                <div class="location-display" id="locationName">Independence, Missouri</div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;">
+                        <span id="progressText">0</span>/2000 Miles
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">PARTY STATUS</div>
-                    <div class="stat-value">Health: <span id="health">100</span>%</div>
-                    <div class="stat-value" style="margin-top: 8px;">Pace: <span id="pace">Steady</span></div>
-                    <div class="stat-value" style="margin-top: 8px;">Date: <span id="date">March 1847</span></div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">📦 Food</div>
+                        <div class="stat-value"><span id="food">2000</span> lbs</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">💰 Money</div>
+                        <div class="stat-value">$<span id="money">1600</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">🐴 Oxen</div>
+                        <div class="stat-value"><span id="oxen">4</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">❤️ Health</div>
+                        <div class="stat-value"><span id="health">100</span>%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">📅 Date</div>
+                        <div class="stat-value" style="font-size: 1.2em;"><span id="date">March 1847</span></div>
+                    </div>
                 </div>
+
+                <div class="event-box">
+                    <div class="event-title" id="eventTitle"></div>
+                    <div class="event-text" id="eventText"></div>
+                </div>
+
+                <div class="choices" id="choices"></div>
             </div>
 
-            <div class="event-text" id="eventText"></div>
-
-            <div class="choices" id="choices"></div>
-        </div>
-
-        <!-- END SCREEN -->
-        <div class="screen" id="endScreen">
-            <div class="end-screen">
-                <div class="end-title" id="endTitle"></div>
-                <div id="deathMessage" class="death-message"></div>
-                <div class="final-stats" id="finalStats"></div>
-                <button onclick="location.reload()">PLAY AGAIN</button>
+            <!-- END SCREEN -->
+            <div class="screen" id="endScreen">
+                <div class="end-screen">
+                    <div class="end-emoji" id="endEmoji"></div>
+                    <div class="end-title" id="endTitle"></div>
+                    <div id="deathMessage" class="death-message"></div>
+                    <div class="end-stats" id="endStats"></div>
+                    <button onclick="location.reload()">PLAY AGAIN</button>
+                </div>
             </div>
         </div>
     </div>
@@ -321,7 +379,6 @@
             money: 1600,
             oxen: 4,
             health: 100,
-            pace: 'Steady',
             date: { month: 3, year: 1847 },
             daysSpent: 0,
             totalDistance: 2000,
@@ -330,30 +387,31 @@
             inEvent: false,
 
             locations: [
-                { name: 'Independence, Missouri', distance: 0 },
-                { name: 'Fort Kearny, Nebraska', distance: 300 },
-                { name: 'Chimney Rock, Nebraska', distance: 420 },
-                { name: 'Fort Laramie, Wyoming', distance: 645 },
-                { name: 'Fort Hall, Idaho', distance: 1197 },
-                { name: 'The Dalles, Oregon', distance: 1665 },
-                { name: 'Willamette Valley, Oregon', distance: 2000 }
+                { name: '🚐 Independence, Missouri', distance: 0 },
+                { name: '🏰 Fort Kearny, Nebraska', distance: 300 },
+                { name: '🗻 Chimney Rock, Nebraska', distance: 420 },
+                { name: '🏰 Fort Laramie, Wyoming', distance: 645 },
+                { name: '🏰 Fort Hall, Idaho', distance: 1197 },
+                { name: '🌪️ The Dalles, Oregon', distance: 1665 },
+                { name: '🌲 Willamette Valley, Oregon', distance: 2000 }
             ],
 
             events: [
                 {
                     name: 'illness',
                     chance: 0.15,
-                    text: `One of your party members has dysentery!\n\nDysentery is a serious intestinal disease.\nWhat do you do?`,
+                    title: '🤒 Someone Has Dysentery!',
+                    text: `A party member has dysentery - a serious intestinal disease.\nWhat do you do?`,
                     choices: [
-                        { text: '1. Rest for 3 days (lose 3 days, spend $10 on medicine)', action: () => {
+                        { text: '✓ Rest for 3 days (-3 days, -$10 medicine, +20 health)', action: () => {
                             game.daysSpent += 3;
                             game.money -= 10;
                             game.health = Math.min(100, game.health + 20);
                             game.continueTrail();
                         }},
-                        { text: '2. Keep moving (risky)', action: () => {
+                        { text: '✗ Keep moving (risky!)', action: () => {
                             if (Math.random() < 0.4) {
-                                game.showEvent(`${game.playerName}'s party member has died.\n\nOh no! Someone in your party has died of dysentery.`, [
+                                game.showEvent('💀 DEATH!', `A party member died of dysentery.\n\nOh no!`, [
                                     { text: 'CONTINUE', action: () => {
                                         game.health -= 40;
                                         game.continueTrail();
@@ -369,13 +427,14 @@
                 {
                     name: 'hunt',
                     chance: 0.2,
-                    text: `You see a buffalo herd!\n\nYour hunters can try to shoot some for meat.\nAttempt the hunt?`,
+                    title: '🎯 Buffalo Herd!',
+                    text: `You see a buffalo herd!\nYour hunters can try to shoot for meat.`,
                     choices: [
-                        { text: '1. Hunt for buffalo (+500 food)', action: () => {
+                        { text: '✓ Hunt for buffalo (+500 food)', action: () => {
                             game.food += 500;
                             game.continueTrail();
                         }},
-                        { text: '2. Skip hunting (save time)', action: () => {
+                        { text: '✗ Skip hunting (save time)', action: () => {
                             game.continueTrail();
                         }}
                     ]
@@ -383,14 +442,15 @@
                 {
                     name: 'river',
                     chance: 0.18,
-                    text: `You reach a river crossing!\n\nThe river is wide and the current is strong.\nHow do you cross?`,
+                    title: '⛈️ River Crossing!',
+                    text: `A wide river blocks your path.\nThe current is strong and dangerous.`,
                     choices: [
-                        { text: '1. Ford across (risky, -100 food)', action: () => {
+                        { text: '✓ Ford across (-100 food, risky)', action: () => {
                             if (Math.random() < 0.6) {
                                 game.food -= 100;
                                 game.continueTrail();
                             } else {
-                                game.showEvent(`DISASTER!\n\nThe wagon overturned in the river!\nYou lost supplies and an ox!`, [
+                                game.showEvent('💀 DISASTER!', `The wagon overturned in the river!\nYou lost supplies and an ox!`, [
                                     { text: 'CONTINUE', action: () => {
                                         game.food -= 300;
                                         game.oxen -= 1;
@@ -399,7 +459,7 @@
                                 ]);
                             }
                         }},
-                        { text: '2. Caulk wagon and float (+2 days, safer)', action: () => {
+                        { text: '✓ Caulk wagon and float (+2 days, safer)', action: () => {
                             game.daysSpent += 2;
                             game.continueTrail();
                         }}
@@ -408,11 +468,12 @@
                 {
                     name: 'bandits',
                     chance: 0.1,
-                    text: `Rough-looking strangers approach your camp!\n\nThey look like they might rob you.\nWhat do you do?`,
+                    title: '🏴‍☠️ Rough Strangers Approaching!',
+                    text: `Rough-looking travelers approach your camp!\nThey might rob you.`,
                     choices: [
-                        { text: '1. Stand and fight (risky)', action: () => {
+                        { text: '✗ Stand and fight (risky)', action: () => {
                             if (Math.random() < 0.5) {
-                                game.showEvent(`AMBUSHED!\n\nThe bandits overwhelmed your party.\nYou lost $400 and supplies!`, [
+                                game.showEvent('💀 AMBUSHED!', `The bandits overwhelmed your party!\nYou lost $400 and supplies!`, [
                                     { text: 'CONTINUE', action: () => {
                                         game.money -= 400;
                                         game.food -= 200;
@@ -423,7 +484,7 @@
                                 game.continueTrail();
                             }
                         }},
-                        { text: '2. Trade with them ($100 for +200 food)', action: () => {
+                        { text: '✓ Trade with them (-$100, +200 food)', action: () => {
                             game.money -= 100;
                             game.food += 200;
                             game.continueTrail();
@@ -433,7 +494,8 @@
                 {
                     name: 'oxen_dies',
                     chance: 0.12,
-                    text: `One of your oxen has died!\n\nWithout enough oxen, the wagon moves slower.`,
+                    title: '🐴 Oxen Died!',
+                    text: `One of your oxen has died from exhaustion.\nYour wagon will move slower now.`,
                     choices: [
                         { text: 'CONTINUE', action: () => {
                             game.oxen -= 1;
@@ -444,7 +506,8 @@
                 {
                     name: 'weather',
                     chance: 0.08,
-                    text: `SEVERE WEATHER!\n\nA terrible storm blocks the trail.\nYou lose a day of travel.`,
+                    title: '🌪️ Severe Weather!',
+                    text: `A terrible storm blocks the trail.\nYou lose a day of travel.`,
                     choices: [
                         { text: 'CONTINUE', action: () => {
                             game.daysSpent += 1;
@@ -477,7 +540,7 @@
                 // Trigger random events
                 for (let event of this.events) {
                     if (Math.random() < event.chance) {
-                        this.showEvent(event.text, event.choices);
+                        this.showEvent(event.title, event.text, event.choices);
                         return;
                     }
                 }
@@ -488,15 +551,10 @@
 
             continueTrail() {
                 // Travel
-                let dailyDistance = 0;
-                if (this.pace === 'Steady') dailyDistance = 20;
-                else if (this.pace === 'Grueling') dailyDistance = 30;
-                else if (this.pace === 'Resting') dailyDistance = 10;
-
-                this.distance += dailyDistance;
+                this.distance += 20;
                 this.daysSpent += 1;
-                this.food -= 5 + (this.oxen * 0.5); // Daily consumption
-                this.health -= 0.5; // Gradual health loss
+                this.food -= 5 + (this.oxen * 0.5);
+                this.health -= 0.5;
 
                 this.updateDisplay();
 
@@ -510,23 +568,25 @@
 
                 if (newLocation !== this.currentLocation) {
                     this.currentLocation = newLocation;
-                    this.showEvent(`You've arrived at ${this.locations[newLocation].name}!`, [
+                    this.showEvent(`✨ NEW LOCATION`, `You've arrived at ${this.locations[newLocation].name}!`, [
                         { text: 'CONTINUE', action: () => this.advanceTrail() }
                     ]);
                     return;
                 }
 
-                setTimeout(() => this.advanceTrail(), 1000);
+                setTimeout(() => this.advanceTrail(), 1500);
             },
 
-            showEvent(text, choices) {
+            showEvent(title, text, choices) {
                 this.inEvent = true;
+                document.getElementById('eventTitle').textContent = title;
                 document.getElementById('eventText').textContent = text;
                 const choicesDiv = document.getElementById('choices');
                 choicesDiv.innerHTML = '';
                 
                 choices.forEach(choice => {
                     const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
                     btn.textContent = choice.text;
                     btn.onclick = choice.action;
                     choicesDiv.appendChild(btn);
@@ -537,7 +597,7 @@
                 document.getElementById('locationName').textContent = this.locations[this.currentLocation].name;
                 document.getElementById('distance').textContent = Math.floor(this.distance);
                 document.getElementById('progressText').textContent = Math.floor(this.distance);
-                document.getElementById('barFill').style.width = (this.distance / this.totalDistance * 100) + '%';
+                document.getElementById('progressFill').style.width = (this.distance / this.totalDistance * 100) + '%';
                 document.getElementById('food').textContent = Math.max(0, Math.floor(this.food));
                 document.getElementById('money').textContent = Math.floor(this.money);
                 document.getElementById('oxen').textContent = Math.max(0, this.oxen);
@@ -553,40 +613,42 @@
                 document.getElementById('gameScreen').classList.remove('active');
                 document.getElementById('endScreen').classList.add('active');
 
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const month = monthNames[((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12)];
+
                 if (success) {
-                    document.getElementById('endTitle').textContent = `${this.playerName}, you have successfully reached Oregon!`;
-                    document.getElementById('finalStats').textContent = `
-Your party made it 2000 miles in ${this.daysSpent} days!
-
-Final Supplies:
-• Food: ${Math.floor(this.food)} lbs
-• Money: $${Math.floor(this.money)}
-• Oxen: ${this.oxen}
-
-You arrived in: ${monthNames[((this.date.month - 1 + Math.floor(this.daysSpent / 30)) % 12)]}
-
-Congratulations! You survived the Oregon Trail!
+                    document.getElementById('endEmoji').textContent = '🎉';
+                    document.getElementById('endTitle').textContent = `${this.playerName}, you reached Oregon!`;
+                    document.getElementById('endStats').innerHTML = `
+                        <strong>🎊 SUCCESS! 🎊</strong><br><br>
+                        Your party made it 2000 miles in ${this.daysSpent} days!<br><br>
+                        <strong>Final Supplies:</strong><br>
+                        • Food: ${Math.floor(this.food)} lbs<br>
+                        • Money: $${Math.floor(this.money)}<br>
+                        • Oxen: ${this.oxen}<br><br>
+                        <strong>Arrival:</strong> ${month}<br><br>
+                        Congratulations! You survived the Oregon Trail!
                     `;
                 } else {
-                    document.getElementById('endTitle').textContent = `${this.playerName}'s party did not make it...`;
+                    document.getElementById('endEmoji').textContent = '💀';
+                    document.getElementById('endTitle').textContent = `${this.playerName}'s journey ended...`;
+                    
                     let cause = 'starvation';
                     if (this.health <= 0) cause = 'illness';
-                    if (this.oxen <= 0) cause = 'inability to move';
+                    if (this.oxen <= 0) cause = 'inability to move (no oxen)';
                     
                     document.getElementById('deathMessage').textContent = `Your party died of ${cause}.`;
-                    document.getElementById('finalStats').textContent = `
-Distance traveled: ${Math.floor(this.distance)} miles
-Days on trail: ${this.daysSpent}
-Food remaining: ${Math.floor(this.food)} lbs
-Health: ${Math.floor(this.health)}%
-
-Your grave rests on the Oregon Trail...
+                    document.getElementById('endStats').innerHTML = `
+                        <strong>💀 GAME OVER 💀</strong><br><br>
+                        Distance traveled: ${Math.floor(this.distance)} miles<br>
+                        Days on trail: ${this.daysSpent}<br>
+                        Food remaining: ${Math.floor(this.food)} lbs<br>
+                        Health: ${Math.floor(this.health)}%<br><br>
+                        Your grave rests on the Oregon Trail...
                     `;
                 }
             }
         };
-
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     </script>
 </body>
 </html>
