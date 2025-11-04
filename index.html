@@ -322,6 +322,71 @@
             font-family: monospace;
             pointer-events: auto;
         }
+
+        .settings-button {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(78, 205, 196, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            pointer-events: auto;
+            border: 2px solid #4ECDC4;
+            transition: all 0.3s;
+        }
+
+        .settings-button:hover {
+            background: rgba(78, 205, 196, 1);
+            transform: translateY(-2px);
+        }
+
+        .settings-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #4ECDC4;
+            border-radius: 15px;
+            padding: 30px;
+            min-width: 400px;
+            pointer-events: auto;
+            display: none;
+            box-shadow: 0 0 40px rgba(78, 205, 196, 0.5);
+        }
+
+        .settings-panel.active {
+            display: block;
+        }
+
+        .setting-option {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .setting-option label {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .setting-option select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 2px solid #4ECDC4;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -370,10 +435,40 @@
 
             <div id="gameScreen" class="screen game-screen">
                 <div class="fps-counter" id="fpsCounter">FPS: 60</div>
+                <div class="settings-button" onclick="game.toggleSettings()">⚙️ SETTINGS</div>
                 <div class="location-display" id="locationDisplay">Loading...</div>
                 <div class="stats-panel" id="statsPanel"></div>
                 <div id="questionPanel" class="question-panel" style="display:none;"></div>
                 <div id="eventPanel" class="event-panel" style="display:none;"></div>
+
+                <div id="settingsPanel" class="settings-panel">
+                    <h2 style="color: #4ECDC4; margin-bottom: 20px; text-align: center;">⚙️ TRAVEL SETTINGS</h2>
+
+                    <div class="setting-option">
+                        <label>🚶 PACE (Speed of Travel)</label>
+                        <select id="paceSelect" onchange="game.changePace(this.value)">
+                            <option value="steady">Steady - Balanced speed</option>
+                            <option value="strenuous">Strenuous - Faster, more tiring</option>
+                            <option value="grueling">Grueling - Fastest, very exhausting</option>
+                        </select>
+                        <p style="font-size: 0.85em; color: #ccc; margin-top: 8px;">Faster pace = more distance but lower health</p>
+                    </div>
+
+                    <div class="setting-option">
+                        <label>🍖 RATIONS (Food Per Day)</label>
+                        <select id="rationsSelect" onchange="game.changeRations(this.value)">
+                            <option value="filling">Filling - Well fed, healthy</option>
+                            <option value="meager">Meager - Less food, slower health loss</option>
+                            <option value="bare">Bare bones - Minimal food, health deteriorates</option>
+                        </select>
+                        <p style="font-size: 0.85em; color: #ccc; margin-top: 8px;">Lower rations save food but hurt health</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="primary" onclick="game.toggleSettings()">CLOSE</button>
+                    </div>
+                </div>
+
                 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             </div>
 
@@ -411,11 +506,20 @@
                     food: 1000,
                     money: 1600,
                     oxen: 4,
-                    health: 100,
                     distance: 0,
                     members: [],
+                    partyMembers: [], // Individual member objects with health/status
                     totalDistance: 2000,
-                    correctAnswers: 0
+                    correctAnswers: 0,
+                    pace: 'steady', // steady, strenuous, grueling
+                    rations: 'filling', // bare, meager, filling
+                    weather: 'clear', // clear, rain, storm, snow, hot
+                    daysOnTrail: 0,
+                    ammunition: 50,
+                    clothing: 4,
+                    wagonParts: 3,
+                    waterBarrels: 3,
+                    achievements: []
                 };
 
                 this.locations = [
@@ -428,14 +532,77 @@
                 ];
 
                 this.questions = [
-                    { q: "What year is it?", w: ["1947", "1747", "1847"], correct: 2 },
-                    { q: "How many miles is the Oregon Trail?", w: ["1000", "3000", "2000"], correct: 2 },
-                    { q: "Which river near Fort Laramie?", w: ["Colorado", "Platte", "Snake"], correct: 1 },
-                    { q: "Why go west?", w: ["Gold", "Land & opportunity", "Running"], correct: 1 },
-                    { q: "What pulls wagons?", w: ["Horses", "Oxen", "Mules"], correct: 1 },
-                    { q: "Journey time?", w: ["1-2 months", "4-6 months", "1 year"], correct: 1 },
-                    { q: "Deadly disease?", w: ["Flu", "Cholera", "Measles"], correct: 1 },
-                    { q: "Before Oregon?", w: ["California", "Idaho", "Washington"], correct: 1 }
+                    // Trail History
+                    { q: "What year did most pioneers travel the Oregon Trail?", w: ["1947", "1747", "1847"], correct: 2, category: "history" },
+                    { q: "How many miles is the Oregon Trail?", w: ["1000", "3000", "2000"], correct: 2, category: "geography" },
+                    { q: "Which river did pioneers follow near Fort Laramie?", w: ["Colorado River", "Platte River", "Snake River"], correct: 1, category: "geography" },
+                    { q: "What was the main reason pioneers went west?", w: ["Gold rush", "Free land & opportunity", "Escaping war"], correct: 1, category: "history" },
+                    { q: "What animal typically pulled covered wagons?", w: ["Horses", "Oxen", "Mules"], correct: 1, category: "life" },
+                    { q: "How long did the journey typically take?", w: ["1-2 months", "4-6 months", "1 year"], correct: 1, category: "history" },
+                    { q: "What was the deadliest disease on the trail?", w: ["Influenza", "Cholera", "Measles"], correct: 1, category: "life" },
+                    { q: "What territory came before Oregon?", w: ["California", "Idaho Territory", "Washington"], correct: 1, category: "geography" },
+
+                    // Geography & Landmarks
+                    { q: "Where did the Oregon Trail begin?", w: ["St. Louis", "Independence, Missouri", "Kansas City"], correct: 1, category: "geography" },
+                    { q: "What famous landmark looked like a courthouse?", w: ["Chimney Rock", "Courthouse Rock", "Independence Rock"], correct: 1, category: "geography" },
+                    { q: "Which mountain range did pioneers cross?", w: ["Appalachian", "Cascade", "Rocky Mountains"], correct: 2, category: "geography" },
+                    { q: "What was the final destination in Oregon?", w: ["Portland", "Willamette Valley", "Salem"], correct: 1, category: "geography" },
+                    { q: "Which river formed a dangerous crossing?", w: ["Missouri", "Snake River", "Mississippi"], correct: 1, category: "geography" },
+                    { q: "What desert did pioneers cross in present-day Idaho?", w: ["Mojave Desert", "Sonoran Desert", "Snake River Plain"], correct: 2, category: "geography" },
+
+                    // Trail Life & Survival
+                    { q: "What was the typical wagon weight limit?", w: ["500 pounds", "2,000 pounds", "5,000 pounds"], correct: 1, category: "life" },
+                    { q: "How much did a covered wagon cost in the 1840s?", w: ["$15-25", "$60-85", "$200-300"], correct: 1, category: "economics" },
+                    { q: "What did pioneers use for fuel when wood was scarce?", w: ["Coal", "Buffalo chips (dung)", "Grass bundles"], correct: 1, category: "life" },
+                    { q: "What was the most common injury on the trail?", w: ["Snake bites", "Gunshot wounds", "Wagon accidents"], correct: 2, category: "life" },
+                    { q: "When was the best month to start the journey?", w: ["March", "April/May", "July"], correct: 1, category: "life" },
+                    { q: "What food item was a trail staple?", w: ["Fresh vegetables", "Hardtack/dried biscuits", "Canned goods"], correct: 1, category: "life" },
+                    { q: "How many pounds of food per person was recommended?", w: ["50 pounds", "100 pounds", "200 pounds"], correct: 2, category: "life" },
+                    { q: "What did pioneers do when oxen died?", w: ["Abandon wagon", "Use remaining oxen", "Buy from other travelers"], correct: 1, category: "life" },
+
+                    // Native Americans
+                    { q: "How did most Native Americans treat pioneers?", w: ["Attacked frequently", "Helped with trading", "Avoided them"], correct: 1, category: "culture" },
+                    { q: "What did pioneers often trade with Native tribes?", w: ["Guns", "Clothing and tools", "Land deeds"], correct: 1, category: "culture" },
+                    { q: "Which tribe controlled land near Fort Laramie?", w: ["Cherokee", "Lakota Sioux", "Apache"], correct: 1, category: "culture" },
+                    { q: "What did Native Americans primarily seek in trade?", w: ["Gold", "Metal goods and cloth", "Horses"], correct: 1, category: "culture" },
+
+                    // Historical Context
+                    { q: "What treaty opened Oregon for settlement?", w: ["Treaty of Paris", "Oregon Treaty of 1846", "Louisiana Purchase"], correct: 1, category: "history" },
+                    { q: "Who shared Oregon Territory before 1846?", w: ["Spain & USA", "Britain & USA", "France & USA"], correct: 1, category: "history" },
+                    { q: "What discovery caused trail traffic to shift south in 1849?", w: ["Oil in Texas", "California Gold Rush", "Silver in Nevada"], correct: 1, category: "history" },
+                    { q: "Who were the first to blaze the Oregon Trail?", w: ["Lewis and Clark", "Fur trappers", "Military scouts"], correct: 1, category: "history" },
+                    { q: "What year did the first large wagon train depart?", w: ["1836", "1843", "1850"], correct: 1, category: "history" },
+
+                    // Economics & Resources
+                    { q: "How much money did a family need for the journey?", w: ["$50-100", "$500-700", "$2,000-3,000"], correct: 1, category: "economics" },
+                    { q: "What could pioneers buy at trading posts?", w: ["Fresh horses", "Supplies & repairs", "Return tickets"], correct: 1, category: "economics" },
+                    { q: "How much did a pair of oxen cost?", w: ["$5-10", "$25-40", "$100-150"], correct: 1, category: "economics" },
+                    { q: "What was the most valuable supply?", w: ["Gold", "Water barrels", "Ammunition"], correct: 1, category: "economics" },
+
+                    // Dangers & Challenges
+                    { q: "What was the most common cause of death?", w: ["Indian attacks", "Disease", "Starvation"], correct: 1, category: "dangers" },
+                    { q: "How many pioneers died on the Oregon Trail (estimated)?", w: ["1,000", "20,000", "100,000"], correct: 1, category: "dangers" },
+                    { q: "What happened to wagons at steep descents?", w: ["Rolled down", "Lowered by rope", "Disassembled"], correct: 1, category: "dangers" },
+                    { q: "What weather was most dangerous?", w: ["Summer heat", "Spring thunderstorms", "Early winter snow"], correct: 2, category: "dangers" },
+                    { q: "What river crossing was most treacherous?", w: ["Missouri", "Columbia River", "Platte"], correct: 1, category: "dangers" },
+
+                    // Forts & Rest Stops
+                    { q: "What was Fort Laramie's original purpose?", w: ["Military base", "Trading post", "Mission"], correct: 1, category: "forts" },
+                    { q: "What could pioneers do at forts?", w: ["Rest only", "Resupply and repair", "Settle permanently"], correct: 1, category: "forts" },
+                    { q: "Which fort marked the halfway point?", w: ["Fort Kearny", "Fort Laramie", "Fort Hall"], correct: 1, category: "forts" },
+                    { q: "What service did forts NOT typically provide?", w: ["Blacksmith", "Doctor", "Free lodging"], correct: 2, category: "forts" },
+
+                    // Trail End & Settlement
+                    { q: "What did the government offer settlers in Oregon?", w: ["Gold", "Free land (640 acres)", "Tax exemption"], correct: 1, category: "settlement" },
+                    { q: "What year did the Homestead Act pass?", w: ["1850", "1862", "1870"], correct: 1, category: "settlement" },
+                    { q: "What did pioneers build first upon arrival?", w: ["Permanent home", "Temporary shelter", "Church"], correct: 1, category: "settlement" },
+                    { q: "What crop thrived in the Willamette Valley?", w: ["Corn", "Wheat", "Cotton"], correct: 1, category: "settlement" },
+
+                    // Wagon & Equipment
+                    { q: "What was a 'prairie schooner'?", w: ["A sailing ship", "Covered wagon", "Supply cart"], correct: 1, category: "equipment" },
+                    { q: "What covered the wagon top?", w: ["Leather", "Canvas", "Wood planks"], correct: 1, category: "equipment" },
+                    { q: "What tool was essential for repairs?", w: ["Hammer", "Saw", "All-purpose tools"], correct: 2, category: "equipment" },
+                    { q: "How wide were wagon wheels?", w: ["2-3 inches", "4-6 inches", "8-10 inches"], correct: 1, category: "equipment" }
                 ];
 
                 window.addEventListener('resize', () => this.onWindowResize());
@@ -636,6 +803,82 @@
 
             createParticleSystem() {
                 this.particles = [];
+                this.weatherParticles = null;
+            }
+
+            createWeatherEffect(type) {
+                // Remove existing weather
+                if (this.weatherParticles) {
+                    this.scene.remove(this.weatherParticles);
+                    this.weatherParticles.geometry.dispose();
+                    this.weatherParticles.material.dispose();
+                }
+
+                if (type === 'clear') return;
+
+                const particleCount = type === 'snow' ? 1000 : 2000;
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+                const velocities = [];
+
+                for (let i = 0; i < particleCount; i++) {
+                    positions.push(
+                        (Math.random() - 0.5) * 200,
+                        Math.random() * 100 + 50,
+                        (Math.random() - 0.5) * 200
+                    );
+                    velocities.push(Math.random() * 0.1);
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+                const material = new THREE.PointsMaterial({
+                    color: type === 'snow' ? 0xFFFFFF : 0x4488FF,
+                    size: type === 'snow' ? 2 : 0.5,
+                    transparent: true,
+                    opacity: type === 'snow' ? 0.8 : 0.6
+                });
+
+                this.weatherParticles = new THREE.Points(geometry, material);
+                this.weatherParticles.userData = { type, velocities };
+                this.scene.add(this.weatherParticles);
+
+                // Update lighting for weather
+                if (type === 'rain' || type === 'storm') {
+                    this.sunLight.intensity = 0.5;
+                    this.scene.fog = new THREE.Fog(0x666666, 50, 300);
+                } else if (type === 'snow') {
+                    this.sunLight.intensity = 0.7;
+                    this.scene.fog = new THREE.Fog(0xCCCCCC, 30, 200);
+                } else {
+                    this.sunLight.intensity = 1.0;
+                    if (this.scene.fog) this.scene.fog = null;
+                }
+            }
+
+            updateWeatherParticles() {
+                if (!this.weatherParticles) return;
+
+                const positions = this.weatherParticles.geometry.attributes.position.array;
+                const velocities = this.weatherParticles.userData.velocities;
+                const type = this.weatherParticles.userData.type;
+
+                for (let i = 0; i < positions.length; i += 3) {
+                    // Update Y position (falling)
+                    positions[i + 1] -= velocities[Math.floor(i / 3)] * (type === 'snow' ? 0.5 : 2);
+
+                    // Reset if below ground
+                    if (positions[i + 1] < 0) {
+                        positions[i + 1] = 100 + Math.random() * 50;
+                    }
+
+                    // Slight horizontal movement for snow
+                    if (type === 'snow') {
+                        positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.05;
+                    }
+                }
+
+                this.weatherParticles.geometry.attributes.position.needsUpdate = true;
             }
 
             updateWagonPosition() {
@@ -648,15 +891,30 @@
             }
 
             updateUI() {
-                document.getElementById('locationDisplay').textContent = 
+                document.getElementById('locationDisplay').textContent =
                     this.locations[Math.min(this.gameData.stage, this.locations.length-1)].name;
 
+                // Party member health display
+                let partyHTML = '';
+                this.gameData.partyMembers.forEach(member => {
+                    const healthColor = member.health > 75 ? '#44A08D' : member.health > 40 ? '#FFD700' : '#FF6B6B';
+                    const statusEmoji = member.alive ? (member.health > 75 ? '😊' : member.health > 40 ? '😐' : '😰') : '💀';
+                    partyHTML += `<div class="stat-box" style="border-color: ${healthColor};">
+                        <div class="stat-label">${statusEmoji} ${member.name}</div>
+                        <div class="stat-value" style="font-size: 1.2em;">${member.alive ? Math.floor(member.health) : 'DEAD'}</div>
+                        <div style="font-size: 0.7em; color: ${healthColor};">${member.status}</div>
+                    </div>`;
+                });
+
                 const statsHTML = `
+                    ${partyHTML}
                     <div class="stat-box"><div class="stat-label">📦 Food</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.food))}</div></div>
                     <div class="stat-box"><div class="stat-label">🐴 Oxen</div><div class="stat-value">${this.gameData.oxen}</div></div>
                     <div class="stat-box"><div class="stat-label">💰 Money</div><div class="stat-value">$${Math.floor(this.gameData.money)}</div></div>
-                    <div class="stat-box"><div class="stat-label">❤️ Health</div><div class="stat-value">${Math.max(0, Math.floor(this.gameData.health))}%</div></div>
-                    <div class="stat-box"><div class="stat-label">🧠 Correct</div><div class="stat-value">${this.gameData.correctAnswers}</div></div>
+                    <div class="stat-box"><div class="stat-label">🎯 Ammo</div><div class="stat-value">${this.gameData.ammunition}</div></div>
+                    <div class="stat-box"><div class="stat-label">🔧 Parts</div><div class="stat-value">${this.gameData.wagonParts}</div></div>
+                    <div class="stat-box"><div class="stat-label">☀️ Day</div><div class="stat-value">${this.gameData.daysOnTrail}</div></div>
+                    <div class="stat-box"><div class="stat-label">🧠 Score</div><div class="stat-value">${this.gameData.correctAnswers}</div></div>
                 `;
                 document.getElementById('statsPanel').innerHTML = statsHTML;
 
@@ -705,43 +963,406 @@
 
                 this.updateUI();
 
+                // Check if at a fort
+                const currentLocation = this.locations[this.gameData.stage];
+                if (currentLocation.name.includes('FORT') && this.gameData.stage > 0) {
+                    this.fortEvent();
+                    return;
+                }
+
                 const eventNum = Math.random();
-                if (eventNum < 0.4) this.askQuestion();
-                else if (eventNum < 0.6) this.illnessEvent();
-                else if (eventNum < 0.8) this.riverCrossing();
+                if (eventNum < 0.25) this.askQuestion();
+                else if (eventNum < 0.35) this.illnessEvent();
+                else if (eventNum < 0.45) this.riverCrossing();
+                else if (eventNum < 0.55) this.huntingEvent();
+                else if (eventNum < 0.65) this.wagonBreakdown();
+                else if (eventNum < 0.75) this.weatherEvent();
+                else if (eventNum < 0.82) this.traderEvent();
+                else if (eventNum < 0.87) this.banditEvent();
+                else if (eventNum < 0.92) this.wildlifeEncounter();
                 else this.continueJourney();
             }
 
             illnessEvent() {
-                this.gameData.health -= 15;
-                const person = this.gameData.members[Math.floor(Math.random() * this.gameData.members.length)];
-                document.getElementById('eventPanel').innerHTML = `
-                    <div class="event-title">🤒 ${person} is ill!</div>
-                    <div class="event-text">Answer the question to help them recover!</div>
-                    <button class="primary" onclick="game.askQuestion()">HELP THEM</button>
-                `;
+                const memberIndex = Math.floor(Math.random() * this.gameData.partyMembers.length);
+                const member = this.gameData.partyMembers[memberIndex];
+
+                if (member.alive) {
+                    const illnesses = ['Cholera', 'Dysentery', 'Measles', 'Typhoid', 'Exhaustion'];
+                    const illness = illnesses[Math.floor(Math.random() * illnesses.length)];
+                    member.health -= 20;
+                    member.status = illness;
+
+                    if (member.health <= 0) {
+                        member.health = 0;
+                        member.alive = false;
+                        member.status = 'deceased';
+                    }
+
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title">🤒 ${member.name} has ${illness}!</div>
+                        <div class="event-text">Health decreased! Answer correctly to find medicine and aid recovery.</div>
+                        <button class="primary" onclick="game.askQuestion()">SEEK HELP</button>
+                    `;
+                } else {
+                    this.continueJourney();
+                    return;
+                }
+
                 document.getElementById('eventPanel').style.display = 'block';
                 document.getElementById('questionPanel').style.display = 'none';
             }
 
             riverCrossing() {
                 document.getElementById('eventPanel').innerHTML = `
-                    <div class="event-title">⛈️ River Crossing!</div>
-                    <div class="event-text">Answer to cross safely!</div>
-                    <button class="primary" onclick="game.askQuestion()">ANSWER QUESTION</button>
+                    <div class="event-title">🌊 River Crossing!</div>
+                    <div class="event-text">A dangerous river blocks your path. Answer correctly to ford safely, or lose supplies!</div>
+                    <button class="primary" onclick="game.answerForRiverCross()">ATTEMPT CROSSING</button>
                 `;
                 document.getElementById('eventPanel').style.display = 'block';
                 document.getElementById('questionPanel').style.display = 'none';
             }
 
+            answerForRiverCross() {
+                document.getElementById('eventPanel').style.display = 'none';
+                this.askQuestion();
+            }
+
+            huntingEvent() {
+                if (this.gameData.ammunition < 5) {
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title">🦌 Hunting Opportunity</div>
+                        <div class="event-text">Not enough ammunition to hunt! (Need 5 bullets)</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                } else {
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title">🦌 Hunting Opportunity!</div>
+                        <div class="event-text">Buffalo spotted nearby! Answer correctly to hunt successfully.</div>
+                        <button class="primary" onclick="game.attemptHunt()">GO HUNTING</button>
+                        <button onclick="game.continueJourney()">SKIP</button>
+                    `;
+                }
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            attemptHunt() {
+                this.gameData.ammunition -= 5;
+                const success = Math.random() > 0.3;
+
+                if (success) {
+                    const meatGained = Math.floor(Math.random() * 100) + 50;
+                    this.gameData.food += meatGained;
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #44A08D;">🎯 SUCCESSFUL HUNT!</div>
+                        <div class="event-text">You killed a buffalo! Gained ${meatGained} lbs of food.<br>Used 5 ammunition.</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                } else {
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #FF6B6B;">❌ HUNT FAILED</div>
+                        <div class="event-text">The buffalo escaped! Lost 5 ammunition.</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                }
+            }
+
+            wagonBreakdown() {
+                const breakdowns = [
+                    { part: 'Broken wheel', cost: 1, moneyFix: 40 },
+                    { part: 'Broken axle', cost: 1, moneyFix: 50 },
+                    { part: 'Torn canvas cover', cost: 0, moneyFix: 20 }
+                ];
+                const breakdown = breakdowns[Math.floor(Math.random() * breakdowns.length)];
+
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🔧 ${breakdown.part}!</div>
+                    <div class="event-text">Your wagon needs repairs!</div>
+                    <div class="button-group">
+                        ${this.gameData.wagonParts >= breakdown.cost ?
+                            `<button class="primary" onclick="game.repairWithParts(${breakdown.cost})">USE SPARE PART</button>` :
+                            '<button disabled style="opacity:0.5">NO SPARE PARTS</button>'}
+                        ${this.gameData.money >= breakdown.moneyFix ?
+                            `<button onclick="game.payForRepair(${breakdown.moneyFix})">PAY $${breakdown.moneyFix}</button>` :
+                            '<button disabled style="opacity:0.5">NOT ENOUGH MONEY</button>'}
+                        <button onclick="game.loseTimeOnRepair()">IMPROVISE (Lose time)</button>
+                    </div>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            repairWithParts(cost) {
+                this.gameData.wagonParts -= cost;
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title" style="color: #44A08D;">✅ REPAIRED!</div>
+                    <div class="event-text">You fixed the wagon using spare parts.</div>
+                    <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                `;
+            }
+
+            payForRepair(cost) {
+                this.gameData.money -= cost;
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title" style="color: #44A08D;">✅ REPAIRED!</div>
+                    <div class="event-text">You paid for professional repairs.</div>
+                    <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                `;
+            }
+
+            loseTimeOnRepair() {
+                this.gameData.daysOnTrail += 2;
+                this.gameData.food -= 20;
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title" style="color: #FFD700;">⏱️ MAKESHIFT REPAIR</div>
+                    <div class="event-text">Improvised repairs took 2 days. Lost 20 lbs food.</div>
+                    <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                `;
+            }
+
+            weatherEvent() {
+                const weathers = [
+                    { type: '🌧️ Heavy Rain', effect: 'Muddy trail slows progress. Food spoils.', foodLoss: 30, daysLost: 1, visual: 'rain' },
+                    { type: '❄️ Early Snow', effect: 'Dangerous cold conditions!', healthLoss: 15, foodLoss: 20, visual: 'snow' },
+                    { type: '🔥 Extreme Heat', effect: 'Scorching sun exhausts party.', healthLoss: 10, waterLoss: 1, visual: 'clear' },
+                    { type: '⛈️ Thunderstorm', effect: 'Storm delays travel.', daysLost: 1, foodLoss: 10, visual: 'storm' }
+                ];
+
+                const weather = weathers[Math.floor(Math.random() * weathers.length)];
+
+                // Apply visual weather effect
+                if (weather.visual === 'rain' || weather.visual === 'storm') {
+                    this.createWeatherEffect('rain');
+                } else if (weather.visual === 'snow') {
+                    this.createWeatherEffect('snow');
+                } else {
+                    this.createWeatherEffect('clear');
+                }
+
+                if (weather.foodLoss) this.gameData.food -= weather.foodLoss;
+                if (weather.healthLoss) {
+                    this.gameData.partyMembers.forEach(m => {
+                        if (m.alive) m.health -= weather.healthLoss;
+                    });
+                }
+                if (weather.daysLost) this.gameData.daysOnTrail += weather.daysLost;
+                if (weather.waterLoss) this.gameData.waterBarrels -= weather.waterLoss;
+
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">${weather.type}</div>
+                    <div class="event-text">${weather.effect}</div>
+                    <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            traderEvent() {
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🤝 Traveling Trader!</div>
+                    <div class="event-text">A friendly trader offers to barter supplies.</div>
+                    <div class="button-group">
+                        <button class="primary" onclick="game.tradeWithTrader('food')">Buy Food ($30)</button>
+                        <button class="primary" onclick="game.tradeWithTrader('ammo')">Buy Ammo ($20)</button>
+                        <button class="primary" onclick="game.tradeWithTrader('parts')">Buy Parts ($50)</button>
+                        <button onclick="game.continueJourney()">No Thanks</button>
+                    </div>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            tradeWithTrader(item) {
+                const trades = {
+                    food: { cost: 30, amount: 50, name: 'Food' },
+                    ammo: { cost: 20, amount: 20, name: 'Ammunition' },
+                    parts: { cost: 50, amount: 1, name: 'Wagon Part' }
+                };
+
+                const trade = trades[item];
+
+                if (this.gameData.money >= trade.cost) {
+                    this.gameData.money -= trade.cost;
+
+                    if (item === 'food') this.gameData.food += trade.amount;
+                    else if (item === 'ammo') this.gameData.ammunition += trade.amount;
+                    else if (item === 'parts') this.gameData.wagonParts += trade.amount;
+
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #44A08D;">✅ TRADE COMPLETE!</div>
+                        <div class="event-text">Purchased ${trade.amount} ${trade.name} for $${trade.cost}.</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                } else {
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #FF6B6B;">❌ NOT ENOUGH MONEY</div>
+                        <div class="event-text">You need $${trade.cost}.</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                }
+            }
+
+            banditEvent() {
+                const stolen = Math.floor(Math.random() * 100) + 50;
+                this.gameData.money = Math.max(0, this.gameData.money - stolen);
+
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🏴‍☠️ BANDITS!</div>
+                    <div class="event-text">Thieves robbed your party during the night! Lost $${stolen}.</div>
+                    <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            wildlifeEncounter() {
+                const encounters = [
+                    { type: '🐍 Snake Bite', member: true, healthLoss: 15 },
+                    { type: '🐻 Bear Sighting', effect: 'Party scared but unharmed' },
+                    { type: '🦅 Eagles Overhead', effect: 'Beautiful sight lifts spirits' },
+                    { type: '🐺 Wolf Howls', effect: 'Sleepless night, slight exhaustion', healthLoss: 5 }
+                ];
+
+                const encounter = encounters[Math.floor(Math.random() * encounters.length)];
+
+                if (encounter.member) {
+                    const randomMember = this.gameData.partyMembers[Math.floor(Math.random() * this.gameData.partyMembers.length)];
+                    if (randomMember.alive) {
+                        randomMember.health -= encounter.healthLoss;
+                        randomMember.status = 'bitten';
+                    }
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title">${encounter.type}!</div>
+                        <div class="event-text">${randomMember.name} was bitten! Health decreased.</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                } else {
+                    if (encounter.healthLoss) {
+                        this.gameData.partyMembers.forEach(m => {
+                            if (m.alive) m.health -= encounter.healthLoss;
+                        });
+                    }
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title">${encounter.type}</div>
+                        <div class="event-text">${encounter.effect}</div>
+                        <button class="primary" onclick="game.continueJourney()">CONTINUE</button>
+                    `;
+                }
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            fortEvent() {
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🏰 ARRIVED AT FORT!</div>
+                    <div class="event-text">Welcome to ${this.locations[this.gameData.stage].name}!<br>Rest and resupply your party.</div>
+                    <div class="button-group">
+                        <button class="primary" onclick="game.showFortShop()">VISIT SHOP</button>
+                        <button class="primary" onclick="game.restAtFort()">REST (Free)</button>
+                        <button onclick="game.continueJourney()">CONTINUE JOURNEY</button>
+                    </div>
+                `;
+                document.getElementById('eventPanel').style.display = 'block';
+                document.getElementById('questionPanel').style.display = 'none';
+            }
+
+            showFortShop() {
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title">🛒 FORT GENERAL STORE</div>
+                    <div class="event-text">Your Money: $${this.gameData.money}</div>
+                    <div class="button-group">
+                        <button class="primary" onclick="game.buyAtFort('food', 100, 40)">Food x100 ($40)</button>
+                        <button class="primary" onclick="game.buyAtFort('ammo', 50, 30)">Ammo x50 ($30)</button>
+                        <button class="primary" onclick="game.buyAtFort('oxen', 1, 40)">Oxen x1 ($40)</button>
+                        <button class="primary" onclick="game.buyAtFort('parts', 2, 60)">Parts x2 ($60)</button>
+                        <button class="primary" onclick="game.buyAtFort('clothing', 2, 25)">Clothing x2 ($25)</button>
+                        <button onclick="game.fortEvent()">← BACK</button>
+                    </div>
+                `;
+            }
+
+            buyAtFort(item, amount, cost) {
+                if (this.gameData.money >= cost) {
+                    this.gameData.money -= cost;
+
+                    switch(item) {
+                        case 'food': this.gameData.food += amount; break;
+                        case 'ammo': this.gameData.ammunition += amount; break;
+                        case 'oxen': this.gameData.oxen += amount; break;
+                        case 'parts': this.gameData.wagonParts += amount; break;
+                        case 'clothing': this.gameData.clothing += amount; break;
+                    }
+
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #44A08D;">✅ PURCHASE COMPLETE!</div>
+                        <div class="event-text">Bought ${amount} ${item} for $${cost}.<br>Remaining: $${this.gameData.money}</div>
+                        <button class="primary" onclick="game.showFortShop()">CONTINUE SHOPPING</button>
+                        <button onclick="game.fortEvent()">LEAVE SHOP</button>
+                    `;
+                } else {
+                    document.getElementById('eventPanel').innerHTML = `
+                        <div class="event-title" style="color: #FF6B6B;">❌ NOT ENOUGH MONEY</div>
+                        <div class="event-text">You need $${cost}. You have $${this.gameData.money}.</div>
+                        <button class="primary" onclick="game.showFortShop()">BACK TO SHOP</button>
+                    `;
+                }
+            }
+
+            restAtFort() {
+                // Heal party members slightly
+                this.gameData.partyMembers.forEach(member => {
+                    if (member.alive) {
+                        member.health = Math.min(100, member.health + 20);
+                        if (member.health > 50) member.status = 'healthy';
+                    }
+                });
+
+                this.gameData.daysOnTrail += 2;
+
+                document.getElementById('eventPanel').innerHTML = `
+                    <div class="event-title" style="color: #44A08D;">😴 RESTED AT FORT</div>
+                    <div class="event-text">Your party rested for 2 days. Health improved!</div>
+                    <button class="primary" onclick="game.fortEvent()">BACK</button>
+                `;
+            }
+
             continueJourney() {
                 document.getElementById('questionPanel').style.display = 'none';
                 document.getElementById('eventPanel').style.display = 'none';
-                this.gameData.stage++;
-                this.gameData.distance = this.locations[this.gameData.stage].distance;
-                this.gameData.food -= 30;
 
-                if (this.gameData.food <= 0 || this.gameData.health <= 0) {
+                // Update days and distance
+                this.gameData.stage++;
+                if (this.gameData.stage >= this.locations.length) {
+                    this.endGame(true);
+                    return;
+                }
+
+                this.gameData.distance = this.locations[this.gameData.stage].distance;
+                this.gameData.daysOnTrail += Math.floor(Math.random() * 5) + 3;
+
+                // Resource consumption based on rations
+                const rationMultiplier = { bare: 0.5, meager: 0.75, filling: 1.0 };
+                const foodConsumption = 30 * rationMultiplier[this.gameData.rations];
+                this.gameData.food -= foodConsumption;
+
+                // Health effects based on rations
+                const healthChange = { bare: -5, meager: -2, filling: 0 };
+                this.gameData.partyMembers.forEach(member => {
+                    if (member.alive) {
+                        member.health += healthChange[this.gameData.rations];
+                        member.health = Math.max(0, Math.min(100, member.health));
+
+                        if (member.health <= 0) {
+                            member.alive = false;
+                            member.status = 'deceased';
+                        }
+                    }
+                });
+
+                // Check for game over conditions
+                const aliveMembers = this.gameData.partyMembers.filter(m => m.alive).length;
+                if (this.gameData.food <= 0 || aliveMembers === 0 || this.gameData.oxen <= 0) {
                     this.endGame(false);
                     return;
                 }
@@ -753,28 +1374,120 @@
                 this.goToScreen('endScreen');
                 const endContent = document.getElementById('endContent');
 
+                const aliveMembers = this.gameData.partyMembers.filter(m => m.alive);
+                const deadMembers = this.gameData.partyMembers.filter(m => !m.alive);
+                const finalScore = this.calculateFinalScore(success);
+
                 if (success) {
                     endContent.innerHTML = `
                         <h1 style="font-size: 3em; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255,215,0,0.6);">🎉 YOU REACHED OREGON! 🎉</h1>
-                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
-                            <p style="font-size: 1.3em; margin-bottom: 20px;"><strong>MISSION ACCOMPLISHED!</strong></p>
-                            <p>Distance: ${this.gameData.distance} miles</p>
-                            <p>Final Food: ${Math.floor(this.gameData.food)} lbs</p>
-                            <p>Party Members: ${this.gameData.members.length}</p>
-                            <p style="margin-top: 20px; font-size: 1.2em; color: #FFD700;">📚 Correct Answers: ${this.gameData.correctAnswers}</p>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 700px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
+                            <p style="font-size: 1.5em; margin-bottom: 20px; color: #FFD700;"><strong>⭐ FINAL SCORE: ${finalScore}</strong></p>
+
+                            <div style="text-align: left; margin: 20px 0;">
+                                <p style="font-size: 1.2em; margin-bottom: 10px;"><strong>📊 Journey Stats:</strong></p>
+                                <p>🗺️ Distance: ${this.gameData.distance} miles</p>
+                                <p>📅 Days on Trail: ${this.gameData.daysOnTrail}</p>
+                                <p>📦 Final Food: ${Math.floor(this.gameData.food)} lbs</p>
+                                <p>💰 Final Money: $${this.gameData.money}</p>
+                                <p>🎯 Ammunition: ${this.gameData.ammunition}</p>
+                                <p>🐴 Oxen: ${this.gameData.oxen}</p>
+                            </div>
+
+                            <div style="text-align: left; margin: 20px 0;">
+                                <p style="font-size: 1.2em; margin-bottom: 10px;"><strong>👥 Party Status:</strong></p>
+                                <p style="color: #44A08D;">✅ Survived: ${aliveMembers.map(m => m.name).join(', ')}</p>
+                                ${deadMembers.length > 0 ? `<p style="color: #FF6B6B;">💀 Perished: ${deadMembers.map(m => m.name).join(', ')}</p>` : ''}
+                            </div>
+
+                            <div style="text-align: left; margin: 20px 0;">
+                                <p style="font-size: 1.2em; margin-bottom: 10px;"><strong>🧠 Education:</strong></p>
+                                <p>📚 Questions Answered Correctly: ${this.gameData.correctAnswers}</p>
+                                <p>🎓 History Knowledge: ${this.gameData.correctAnswers > 15 ? 'Expert' : this.gameData.correctAnswers > 10 ? 'Good' : 'Fair'}</p>
+                            </div>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">PLAY AGAIN</button>
                     `;
                 } else {
+                    const failReason = this.getFailureReason();
                     endContent.innerHTML = `
                         <h1 style="font-size: 3em; margin-bottom: 20px;">⚰️ YOUR JOURNEY ENDED ⚰️</h1>
-                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 600px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
-                            <p>Distance: ${this.gameData.distance} miles</p>
-                            <p>Questions Answered: ${this.gameData.correctAnswers}</p>
+                        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); max-width: 700px; box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);">
+                            <p style="font-size: 1.3em; color: #FF6B6B; margin-bottom: 20px;"><strong>${failReason}</strong></p>
+
+                            <div style="text-align: left; margin: 20px 0;">
+                                <p>🗺️ Distance Traveled: ${this.gameData.distance} / 2000 miles</p>
+                                <p>📅 Days Survived: ${this.gameData.daysOnTrail}</p>
+                                <p>📚 Questions Answered: ${this.gameData.correctAnswers}</p>
+                                <p>👥 Survivors: ${aliveMembers.length} / ${this.gameData.partyMembers.length}</p>
+                            </div>
+
+                            <p style="margin-top: 20px; font-style: italic;">"Here lies the ${this.gameData.members[0]} party. They made it ${this.gameData.distance} miles before meeting their fate."</p>
                         </div>
                         <button class="primary" onclick="location.reload()" style="margin-top: 30px;">TRY AGAIN</button>
                     `;
                 }
+            }
+
+            calculateFinalScore(success) {
+                let score = 0;
+
+                // Base points for reaching Oregon
+                if (success) score += 1000;
+
+                // Distance points
+                score += this.gameData.distance;
+
+                // Survivor bonus
+                const aliveMembers = this.gameData.partyMembers.filter(m => m.alive).length;
+                score += aliveMembers * 500;
+
+                // Resource bonus
+                score += Math.floor(this.gameData.food / 2);
+                score += this.gameData.money * 2;
+
+                // Education bonus
+                score += this.gameData.correctAnswers * 100;
+
+                // Speed bonus (fewer days)
+                if (this.gameData.daysOnTrail < 120) {
+                    score += (120 - this.gameData.daysOnTrail) * 10;
+                }
+
+                return score;
+            }
+
+            getFailureReason() {
+                if (this.gameData.food <= 0) return "😵 Your party starved to death";
+                if (this.gameData.oxen <= 0) return "🐴 Lost all oxen, wagon cannot move";
+                const aliveMembers = this.gameData.partyMembers.filter(m => m.alive).length;
+                if (aliveMembers === 0) return "💀 Everyone in your party has died";
+                return "❌ The journey has ended";
+            }
+
+            toggleSettings() {
+                const panel = document.getElementById('settingsPanel');
+                panel.classList.toggle('active');
+            }
+
+            changePace(pace) {
+                this.gameData.pace = pace;
+                const messages = {
+                    steady: 'Pace set to Steady - Balanced travel',
+                    strenuous: 'Pace set to Strenuous - Moving faster!',
+                    grueling: 'Pace set to Grueling - Maximum speed!'
+                };
+                console.log(messages[pace]);
+            }
+
+            changeRations(rations) {
+                this.gameData.rations = rations;
+                const messages = {
+                    filling: 'Rations set to Filling - Party well fed',
+                    meager: 'Rations set to Meager - Conserving food',
+                    bare: 'Rations set to Bare Bones - Minimal food'
+                };
+                console.log(messages[rations]);
             }
 
             goToScreen(screenId) {
@@ -783,14 +1496,24 @@
             }
 
             startJourney() {
-                this.gameData.members = [
+                const names = [
                     document.getElementById('leader').value || 'Leader',
                     document.getElementById('member2').value || 'Companion 1',
                     document.getElementById('member3').value || 'Companion 2',
                     document.getElementById('member4').value || 'Companion 3'
                 ];
+
+                this.gameData.members = names;
+                this.gameData.partyMembers = names.map(name => ({
+                    name: name,
+                    health: 100,
+                    status: 'healthy',
+                    alive: true
+                }));
+
                 this.gameData.stage = 0;
                 this.gameData.distance = 0;
+                this.gameData.daysOnTrail = 0;
                 this.goToScreen('gameScreen');
                 setTimeout(() => this.presentEvent(), 500);
             }
@@ -814,6 +1537,7 @@
             animate() {
                 requestAnimationFrame(() => this.animate());
                 this.updateWagonPosition();
+                this.updateWeatherParticles();
                 this.updateFPS();
                 this.renderer.render(this.scene, this.camera);
             }
